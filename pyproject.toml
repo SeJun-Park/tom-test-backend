@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "tom-test-backend"
+version = "0.1.0"
+description = ""
+authors = ["SeJun-Park <sejun9aldo@gmail.com>"]
+readme = "README.md"
+packages = [{include = "tom_test_backend"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.2.1"
+djangorestframework = "^3.14.0"
+requests = "^2.30.0"
+django-environ = "^0.10.0"
+django-cors-headers = "^3.14.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
