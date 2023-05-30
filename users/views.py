@@ -61,7 +61,7 @@ class IsPlayerKakaoLogIn(APIView):
             data={
                 "grant_type" : "authorization_code",
                 "client_id" : "d2703f278acadc861b3685bb7368adfb",
-                "redirect_uri" : "https://tom-test-frontend.onrender.com/kakaologin",
+                "redirect_uri" : "https://3manofthematch.com/kakaologin",
                 # "redirect_uri" : "http://127.0.0.1:3001/kakaologin",
                 "code" : code
             })
