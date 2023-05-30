@@ -14,6 +14,10 @@ from pathlib import Path
 #RENDER
 import os
 import environ
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 import dj_database_url
 
 env = environ.Env()
@@ -33,7 +37,9 @@ SECRET_KEY = env("SECRET_KEY")
 #RENDER
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+]
 #RENDER
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 
@@ -177,3 +183,23 @@ CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3001"]
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3001"]
+
+
+#RENDER
+
+if not DEBUG:
+    sentry_sdk.init(
+        dsn="https://e704b9d102f246898cbc622a6c649e53@o4505273845219328.ingest.sentry.io/4505273853214720",
+        integrations=[
+            DjangoIntegration(),
+        ],
+
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
+
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True
+    )
