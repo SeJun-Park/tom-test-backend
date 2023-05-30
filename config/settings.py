@@ -177,8 +177,6 @@ if not DEBUG:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_CREDENTIALS = True
-
 AUTH_USER_MODEL = "users.User"
 
 
@@ -189,9 +187,11 @@ if DEBUG:
 
 else:
 
-    CORS_ALLOWED_ORIGINS = ["https://3manofthematch.com"]
-    CSRF_TRUSTED_ORIGINS = ["https://3manofthematch.com"]
+    CORS_ALLOWED_ORIGINS = ["https://www.3manofthematch.com"]
+    CSRF_TRUSTED_ORIGINS = ["https://www.3manofthematch.com"]
 
+
+CORS_ALLOW_CREDENTIALS = True
 
 #RENDER
 
