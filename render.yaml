@@ -1,12 +1,12 @@
 databases:
-  - name: tom_test
+  - name: tom_test-db
     databaseName: tom_test
     user: tom_test
     region: singapore
 
 services:
   - type: web
-    name: tom_test
+    name: tom_test-backend
     env: python
     region: singapore
     buildCommand: "./build.sh"

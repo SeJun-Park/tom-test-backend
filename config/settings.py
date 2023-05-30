@@ -187,6 +187,7 @@ if DEBUG:
     CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3001"]
 
 else:
+
     CORS_ALLOWED_ORIGINS = ["https://tom-test-frontend.onrender.com"]
     CSRF_TRUSTED_ORIGINS = ["https://tom-test-frontend.onrender.com"]
 
@@ -194,6 +195,10 @@ else:
 #RENDER
 
 if not DEBUG:
+
+    SESSION_COOKIE_DOMAIN = ".3manofthematch.com"
+    CSRF_COOKIE_DOMAIN = ".3manofthematch.com"
+
     sentry_sdk.init(
         dsn="https://e704b9d102f246898cbc622a6c649e53@o4505273845219328.ingest.sentry.io/4505273853214720",
         integrations=[
