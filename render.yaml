@@ -1,12 +1,12 @@
 databases:
-  - name: tom-test
-    databaseName: tom-test
-    user: tom-test
+  - name: tom_test
+    databaseName: tom_test
+    user: tom_test
     region: singapore
 
 services:
   - type: web
-    name: tom-test
+    name: tom_test
     env: python
     region: singapore
     buildCommand: "./build.sh"
@@ -14,7 +14,7 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: tom-test
+          name: tom_test
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
