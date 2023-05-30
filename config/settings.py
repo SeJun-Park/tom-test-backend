@@ -189,8 +189,8 @@ if DEBUG:
 
 else:
 
-    CORS_ALLOWED_ORIGINS = ["https://tom-test-frontend.onrender.com"]
-    CSRF_TRUSTED_ORIGINS = ["https://tom-test-frontend.onrender.com"]
+    CORS_ALLOWED_ORIGINS = ["https://3manofthematch.com"]
+    CSRF_TRUSTED_ORIGINS = ["https://3manofthematch.com"]
 
 
 #RENDER
