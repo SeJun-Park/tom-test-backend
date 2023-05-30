@@ -176,13 +176,19 @@ if not DEBUG:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = "users.User"
-
-CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3001"]
-
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3001"]
+AUTH_USER_MODEL = "users.User"
+
+
+if DEBUG:
+
+    CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3001"]
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3001"]
+
+else:
+    CORS_ALLOWED_ORIGINS = ["https://tom-test-frontend.onrender.com"]
+    CSRF_TRUSTED_ORIGINS = ["https://tom-test-frontend.onrender.com"]
 
 
 #RENDER
