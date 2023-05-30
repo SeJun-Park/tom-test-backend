@@ -117,7 +117,7 @@ if DEBUG:
 else:
     DATABASES = {
         'dafault' : dj_database_url.config(
-            conn_max_age=600
+            conn_max_age=600,
                 # 이건 DB 연결이 종료되기 전, 연결 유지 시간(Timeout)을 뜻함
         )
     }
