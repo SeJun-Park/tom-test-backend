@@ -1,0 +1,22 @@
+databases:
+  - name: tom-test
+    databaseName: tom-test
+    user: tom-test
+    region: singapore
+
+services:
+  - type: web
+    name: tom-test
+    env: python
+    region: singapore
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn mysite.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tom-test
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
