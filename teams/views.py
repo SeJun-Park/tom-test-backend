@@ -135,7 +135,7 @@ class TeamPlayersNotConnected(APIView):
         team = self.get_object(pk)
         team_players_all = team.players.all()
         team_players_not_connected = team_players_all.filter(connected_user__isnull=True, connecting_user__isnull=True)
-        team_players_not_connected_sorted = team_players_not_connected.order_by("name")
+        team_players_not_connected_sorted = team_players_not_connected.order_by("backnumber")
         serializer = TinyPlayerSerializer(team_players_not_connected_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
