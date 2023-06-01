@@ -1,4 +1,5 @@
 import time
+from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q, F
@@ -99,6 +100,44 @@ class TeamPlayers(APIView):
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class TeamPlayersTOMStats(APIView):
+    
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        team = self.get_object(pk)
+        team_players_all = team.players.all()
+        team_players_all_sorted_by_goals = team_players_all.annotate(goal_count=Count('goals')).order_by('-goal_count')
+        serializer = TinyPlayerSerializer(team_players_all_sorted_by_goals, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TeamPlayersGoalStats(APIView):
+        
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        team = self.get_object(pk)
+        team_players_all = team.players.all()
+        team_players_all_sorted_by_tom_games = team_players_all.annotate(tom_games_count=Count('tom_games')).order_by('-tom_games_count')
+        serializer = TinyPlayerSerializer(team_players_all_sorted_by_tom_games, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TeamPlayersConnected(APIView):
@@ -261,8 +300,13 @@ class TeamGoals(APIView):
     def get(self, request, pk):
         try:
             team = self.get_object(pk)
-            team_players_all = team.players.all()
-            team_goals_all = GoalPlayer.objects.filter(player__in=team_players_all).count()
+            team_games_all = team.games.all()
+            # team_goals_all = GoalPlayer.objects.filter(game__in=team_games_all).count()
+
+            team_goals_all = 0
+            for game in team_games_all:
+                team_goals_all = team_goals_all + game.team_score
+
             response_data = {
                 "goals" : team_goals_all
             }
@@ -288,9 +332,11 @@ class TeamGoalsRelative(APIView):
 
             team_games_all = team.games.all()
             team_games_relative = team_games_all.filter(vsteam=vsteam)
+            # team_goals_relative_all = GoalPlayer.objects.filter(game__in=team_games_relative).count()
 
-            team_players_all = team.players.all()
-            team_goals_relative_all = GoalPlayer.objects.filter(game__in=team_games_relative).count()
+            team_goals_relative_all = 0
+            for game in team_games_relative:
+                team_goals_relative_all = team_goals_relative_all + game.team_score
 
             response_data = {
                 "goals" : team_goals_relative_all

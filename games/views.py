@@ -292,6 +292,11 @@ class GameVote(APIView):
             if (vote.candidates.count()/2) > vote.participants.count():
                 game.toms.clear()
 
+            if vote.candidates.count() == vote.participants.count():
+                vote_end = timezone.now()
+                vote.vote_end = vote_end
+                vote.save()
+
         return Response(status=status.HTTP_200_OK)
 
         

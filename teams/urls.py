@@ -6,6 +6,8 @@ urlpatterns = [
     path("search/", views.TeamSearch.as_view()),
     path("<int:pk>/", views.TeamDetail.as_view()),
     path("<int:pk>/players/", views.TeamPlayers.as_view()),
+    path("<int:pk>/players/goalstats/", views.TeamPlayersGoalStats.as_view()),
+    path("<int:pk>/players/tomstats/", views.TeamPlayersTOMStats.as_view()),
     path("<int:pk>/players/connected/", views.TeamPlayersConnected.as_view()),
     path("<int:pk>/players/notconnected/", views.TeamPlayersNotConnected.as_view()),
     path("<int:pk>/games/", views.TeamGames.as_view()),
