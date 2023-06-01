@@ -219,7 +219,7 @@ class TeamGames(APIView):
                             game.participants.add(participant)
                         
                     game_datetime = timezone.datetime.combine(game.date, game.end_time)
-                    vote_start = game_datetime + timedelta(hours=1)
+                    vote_start = game_datetime
                     vote_end = game_datetime + timedelta(days=2)
                     vote_end = vote_end.replace(hour=0, minute=0, second=0)
 
