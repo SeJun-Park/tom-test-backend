@@ -102,7 +102,7 @@ class TeamPlayers(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class TeamPlayersTOMStats(APIView):
+class TeamPlayersGoalStats(APIView):
     
     permission_classes = [IsAuthenticated]
 
@@ -121,7 +121,7 @@ class TeamPlayersTOMStats(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TeamPlayersGoalStats(APIView):
+class TeamPlayersTOMStats(APIView):
         
     permission_classes = [IsAuthenticated]
 
