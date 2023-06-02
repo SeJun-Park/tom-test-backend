@@ -305,7 +305,8 @@ class TeamGoals(APIView):
 
             team_goals_all = 0
             for game in team_games_all:
-                team_goals_all = team_goals_all + game.team_score
+                if game.team_score:
+                    team_goals_all = team_goals_all + game.team_score
 
             response_data = {
                 "goals" : team_goals_all
@@ -336,7 +337,8 @@ class TeamGoalsRelative(APIView):
 
             team_goals_relative_all = 0
             for game in team_games_relative:
-                team_goals_relative_all = team_goals_relative_all + game.team_score
+                if game.team_score:
+                    team_goals_relative_all = team_goals_relative_all + game.team_score
 
             response_data = {
                 "goals" : team_goals_relative_all
