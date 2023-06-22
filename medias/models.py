@@ -13,3 +13,14 @@ class Photo(CommonModel):
 
     def __str__(self) -> str:
         return "Photo File"
+
+class Video(CommonModel):
+
+    """ Model Photo Definition """
+
+    file = models.URLField()
+    game = models.ForeignKey("games.Game", null=True, blank=True, on_delete=models.CASCADE, related_name="videos")
+    team = models.ForeignKey("teams.Team", null=True, blank=True, on_delete=models.CASCADE, related_name="videos")
+
+    def __str__(self) -> str:
+        return "Video File"
