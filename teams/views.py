@@ -347,6 +347,69 @@ class TeamGoalsRelative(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
+class TeamGoalsAgainst(APIView):
+    
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        try:
+            team = self.get_object(pk)
+            team_games_all = team.games.all()
+            # team_goals_all = GoalPlayer.objects.filter(game__in=team_games_all).count()
+
+            team_goals_against_all = 0
+            for game in team_games_all:
+                if game.vsteam_score:
+                    team_goals_against_all = team_goals_against_all + game.vsteam_score
+
+            response_data = {
+                "goals" : team_goals_against_all
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class TeamGoalsAgainstRelative(APIView):
+        
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound
+
+    def post(self, request, pk):
+        try:
+            team = self.get_object(pk)
+            vsteam = request.data.get("vsteam")
+
+            team_games_all = team.games.all()
+            team_games_relative = team_games_all.filter(vsteam=vsteam)
+            # team_goals_relative_all = GoalPlayer.objects.filter(game__in=team_games_relative).count()
+
+            team_goals_against_relative_all = 0
+            for game in team_games_relative:
+                if game.vsteam_score:
+                    team_goals_against_relative_all = team_goals_against_relative_all + game.vsteam_score
+
+            response_data = {
+                "goals" : team_goals_against_relative_all
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+
 class TeamToms(APIView):
     
     permission_classes = [IsAuthenticated]

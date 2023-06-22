@@ -14,6 +14,8 @@ urlpatterns = [
     path("<int:pk>/games-relative/", views.TeamGamesRelative.as_view()),
     path("<int:pk>/goals/", views.TeamGoals.as_view()),
     path("<int:pk>/goals-relative/", views.TeamGoalsRelative.as_view()),
+    path("<int:pk>/goals/against/", views.TeamGoalsAgainst.as_view()),
+    path("<int:pk>/goals-relative/against/", views.TeamGoalsAgainstRelative.as_view()),
     path("<int:pk>/toms/", views.TeamToms.as_view()),
     path("<int:pk>/superplayers/", views.TeamSuperPlayers.as_view()),
     path("<int:pk>/vsteams/", views.TeamVSteams.as_view()),
