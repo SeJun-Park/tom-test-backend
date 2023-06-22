@@ -6,7 +6,7 @@ from .models import Game, Vote, GoalPlayer
 from players.models import Player
 from teams.serializers import TinyTeamSerializer
 from players.serializers import TinyPlayerSerializer
-from medias.serializers import VideoSerializer
+from medias.serializers import VideoSerializer, PhotoSerializer
 
 class TinyGameSerializer(serializers.ModelSerializer):
 
@@ -88,6 +88,7 @@ class GameSerializer(serializers.ModelSerializer):
     participants = TinyPlayerSerializer(many=True)
     toms = TinyPlayerSerializer(many=True)
     videos = VideoSerializer(many=True)
+    photos = PhotoSerializer(many=True)
 
     def validate(self, data):
         if data["start_time"] >= data["end_time"]:
