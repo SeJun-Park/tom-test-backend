@@ -289,8 +289,8 @@ class GameVote(APIView):
             # timezone.activate('Asia/Seoul')  # 원하는 타임존 설정
             # now = timezone.now()
 
-            if (vote.candidates.count()/2) > vote.participants.count():
-                game.toms.clear()
+            # if (vote.candidates.count()/2) > vote.participants.count():
+            #     game.toms.clear()
 
             if vote.candidates.count() == vote.participants.count():
                 vote_end = timezone.now()
