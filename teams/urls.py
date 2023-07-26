@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:pk>/players/tomstats/", views.TeamPlayersTOMStats.as_view()),
     path("<int:pk>/players/connected/", views.TeamPlayersConnected.as_view()),
     path("<int:pk>/players/notconnected/", views.TeamPlayersNotConnected.as_view()),
+    path("<int:pk>/players/connecting/", views.TeamPlayersConnecting.as_view()),
     path("<int:pk>/games/", views.TeamGames.as_view()),
     path("<int:pk>/games-relative/", views.TeamGamesRelative.as_view()),
     path("<int:pk>/goals/", views.TeamGoals.as_view()),

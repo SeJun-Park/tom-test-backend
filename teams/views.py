@@ -179,6 +179,26 @@ class TeamPlayersNotConnected(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class TeamPlayersConnecting(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        team = self.get_object(pk)
+        team_players_all = team.players.all()
+        team_players_connecting = team_players_all.filter(connecting_user__isnull=False)
+        team_players_connecting_sorted = team_players_connecting.order_by("name")
+        serializer = TinyPlayerSerializer(team_players_connecting_sorted, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class TeamGames(APIView):
     
     permission_classes = [IsAuthenticated]
