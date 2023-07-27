@@ -9,6 +9,7 @@ class TinyTeamSerializer(serializers.ModelSerializer):
             "pk",
             "code",
             "avatar",
+            "description",
             "name",
             "plan",
             "since",

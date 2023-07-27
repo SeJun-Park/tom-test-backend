@@ -88,11 +88,13 @@ class TeamPlayers(APIView):
             team = self.get_object(pk)
             player_name = request.data.get("name")
             player_backnumber = request.data.get("backnumber")
+            player_description = request.data.get("description", None)
 
             player = Player.objects.create(
                 team=team,
                 name=player_name,
-                backnumber=player_backnumber
+                backnumber=player_backnumber,
+                description=player_description
             )
 
             player.save()

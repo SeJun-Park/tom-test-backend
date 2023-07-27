@@ -10,6 +10,7 @@ class Team(CommonModel):
     avatar = models.URLField(blank=True)
     name = models.CharField(max_length=150, unique=True)
     since = models.PositiveIntegerField(blank=True, null=True)
+    description = models.CharField(max_length=150, blank=True)
     spvsr = models.OneToOneField("users.User", on_delete=models.CASCADE, related_name="team", default=None)
     plan = models.CharField(max_length=150, default="basic",)
 
