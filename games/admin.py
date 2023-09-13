@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import GoalPlayer, Game, Vote, VoteBallot
+from .models import GoalPlayer, Game, Vote, VoteBallot, GameQuota
 
 # Register your models here.
 
@@ -18,3 +18,7 @@ class GoalPlayerAdmin(admin.ModelAdmin):
 @admin.register(VoteBallot)
 class VoteBallotAdmin(admin.ModelAdmin):
     list_display = ("game", "player")
+
+@admin.register(GameQuota)
+class GameQuotaAdmin(admin.ModelAdmin):
+    list_display = ("game", "formation",)

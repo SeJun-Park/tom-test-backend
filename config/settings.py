@@ -215,3 +215,7 @@ if not DEBUG:
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True
     )
+
+CF_ID = env("CF_ID")
+CF_TOKEN = env("CF_TOKEN")
+CF_GLOBAL_API_KEY = env("CF_GLOBAL_API_KEY")

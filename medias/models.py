@@ -10,7 +10,8 @@ class Photo(CommonModel):
     file = models.URLField()
     game = models.ForeignKey("games.Game", null=True, blank=True, on_delete=models.CASCADE, related_name="photos")
     team = models.ForeignKey("teams.Team", null=True, blank=True, on_delete=models.CASCADE, related_name="photos")
-
+    feed = models.ForeignKey("teams.TeamFeed", null=True, blank=True, on_delete=models.CASCADE, related_name="photos")
+    
     def __str__(self) -> str:
         return "Photo File"
 

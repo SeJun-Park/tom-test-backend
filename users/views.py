@@ -1,4 +1,5 @@
 import time
+import re
 import requests
 from django.db import transaction
 from django.conf import settings
@@ -266,6 +267,124 @@ class IsSpvsrTeam(APIView):
             return Response(serializer.data)
         except Team.DoesNotExist:
             raise NotFound
+
+    def put(self, request):
+
+        user = request.user
+        team = user.team
+
+        serializer = TinyTeamSerializer(team, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    team = serializer.save()
+
+            except Exception as e: 
+                # 어떤 에러가 나든지 라는 뜻.
+                print(e)
+                raise ParseError
+
+            serializer = TinyTeamSerializer(team)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            print(f"serializer.errors : {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IsSpvsrTeamPhoto(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+
+        user = request.user
+        team = user.team
+
+        def extract_image_id_from_url(url: str) -> str:
+            pattern = r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
+            return None
+
+        if team.avatar and request.data.get("avatar"):
+
+            image_id = extract_image_id_from_url(team.avatar)
+
+            if image_id:
+                url = f"https://api.cloudflare.com/client/v4/accounts/{settings.CF_ID}/images/v1/{image_id}"
+            
+                response = requests.delete(url, headers={
+                        "Authorization": f"Bearer {settings.CF_TOKEN}",
+                        "Content-Type": "application/json"
+                        # "X-Auth-Email": "sejun9aldo@gmail.com",
+                        # "X-Auth-Key": settings.CF_GLOBAL_API_KEY
+                })
+
+
+                if response.status_code != 200:  # 204 No Content는 성공적으로 삭제되었음을 의미합니다.
+                    return Response({"error": "Failed to delete image", "details": response.text}, status=response.status_code)
+
+        serializer = TinyTeamSerializer(team, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    team = serializer.save()
+                    print(f"4. team.avatar : {team.avatar}")
+
+            except Exception as e: 
+                # 어떤 에러가 나든지 라는 뜻.
+                print(e)
+                raise ParseError
+
+            serializer = TinyTeamSerializer(team)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            print(f"serializer.errors : {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+
+        permission_classes = [IsAuthenticated]
+            
+        user = request.user
+        team = user.team
+
+        def extract_image_id_from_url(url: str) -> str:
+            pattern = r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
+            return None
+
+        if team.avatar:
+
+            image_id = extract_image_id_from_url(team.avatar)
+
+            if image_id:
+                url = f"https://api.cloudflare.com/client/v4/accounts/{settings.CF_ID}/images/v1/{image_id}"
+            
+                response = requests.delete(url, headers={
+                        "Authorization": f"Bearer {settings.CF_TOKEN}",
+                        "Content-Type": "application/json"
+                        # "X-Auth-Email": "sejun9aldo@gmail.com",
+                        # "X-Auth-Key": settings.CF_GLOBAL_API_KEY
+                })
+
+
+                if response.status_code != 200:  # 204 No Content는 성공적으로 삭제되었음을 의미합니다.
+                    return Response({"error": "Failed to delete image", "details": response.text}, status=response.status_code)
+
+                team.avatar = ""
+                team.save()
+                
+            return Response({"message": "Image successfully deleted and avatar cleared."}, status=status.HTTP_200_OK)
 
 class IsSpvsrGames(APIView):
     

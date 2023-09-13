@@ -3,7 +3,39 @@ from common.models import CommonModel
 
 # Create your models here.
 
+class GameQuota(CommonModel):
+
+    """ Model GameQuota Definition """
+
+    class GameQuotaFormationChoices(models.TextChoices):
+        FFT = ("4-4-2", "4-4-2")
+        FTTO = ("4-2-3-1", "4-2-3-1")
+        TFT = ("3-5-2", "3-5-2")
+
+    game = models.ForeignKey("games.Game", on_delete=models.CASCADE, related_name="quotas")
+    formation = models.CharField(max_length=150, choices=GameQuotaFormationChoices.choices)
+    lineups = models.ManyToManyField("players.Player", through="GameQuotaLineup", related_name="quotas")
+    memo = models.TextField(blank=True)
+
+
+class GameQuotaLineup(models.Model):
+
+    """ Model GameQuotaLineup Definition """
+
+
+    game_quota = models.ForeignKey(GameQuota, on_delete=models.CASCADE)
+    player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = ('game_quota', 'player', 'order')
+
+
+
 class VoteBallot(CommonModel):
+
+    """ Model VoteBallot Definition """
+
     game = models.ForeignKey("games.Game", on_delete=models.CASCADE, related_name="ballots")
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="ballots")
 

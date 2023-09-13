@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("<int:pk>/", views.PlayerDetail.as_view()),
+    path("<int:pk>/photo/", views.PlayerPhoto.as_view()),
     path("<int:pk>/connecting/", views.PlayerConnecting.as_view()),
     path("<int:pk>/connecting-cancel/", views.PlayerConnectingCancel.as_view()),
     path("<int:pk>/connect/", views.PlayerConnect.as_view()),

@@ -2,7 +2,7 @@ from django.utils.timezone import activate, get_current_timezone
 from datetime import datetime
 from django.utils import timezone
 from rest_framework import serializers
-from .models import Game, Vote, GoalPlayer
+from .models import Game, Vote, GoalPlayer, GameQuota, GameQuotaLineup
 from players.models import Player
 from teams.serializers import TinyTeamSerializer
 from players.serializers import TinyPlayerSerializer
@@ -81,6 +81,22 @@ class GoalPlayerSerializer(serializers.ModelSerializer):
         model = GoalPlayer
         fields = "__all__"
 
+class GameQuotaSerializer(serializers.ModelSerializer):
+
+    # lineups = TinyPlayerSerializer(many=True)
+    lineups = serializers.SerializerMethodField()
+
+    def get_lineups(self, game_quota):
+        # lineups를 'order' 필드를 기반으로 정렬
+        lineups = GameQuotaLineup.objects.filter(game_quota=game_quota).order_by('order')
+        lineups = [lineup.player for lineup in lineups]
+        return TinyPlayerSerializer(lineups, many=True).data
+
+
+    class Meta:
+        model = GameQuota
+        fields = "__all__"
+
 class GameSerializer(serializers.ModelSerializer):
 
     team = TinyTeamSerializer()
@@ -89,6 +105,7 @@ class GameSerializer(serializers.ModelSerializer):
     toms = TinyPlayerSerializer(many=True)
     videos = VideoSerializer(many=True)
     photos = PhotoSerializer(many=True)
+    quotas = GameQuotaSerializer(many=True)
 
     def validate(self, data):
         if data["start_time"] >= data["end_time"]:

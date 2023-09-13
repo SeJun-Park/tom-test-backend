@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Team, Ball
+from .models import Team, Ball, TeamFeed, TeamNoti, TeamSchedule, TeamVote, DuesDetail, DuesPayment, DuesInItem, DuesOutItem, DuesPaymentItem
+from medias.serializers import PhotoSerializer
 
 class TinyTeamSerializer(serializers.ModelSerializer):
 
@@ -79,8 +80,83 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = "__all__"
 
+class UploadTeamSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Team
+        fields = "__all__"
+
 class BallSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ball
+        fields = "__all__"
+
+class UploadTeamFeedSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = TeamFeed
+        fields = "__all__"
+
+class TeamFeedSerializer(serializers.ModelSerializer):
+
+    photos = PhotoSerializer(many=True)
+
+    class Meta:
+        model = TeamFeed
+        fields = "__all__"
+
+class TeamNotiSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TeamNoti
+        fields = "__all__"
+
+class TeamScheduleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TeamSchedule
+        fields = "__all__"
+
+class TeamVoteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TeamVote
+        fields = "__all__"
+
+class DuesDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DuesDetail
+        fields = "__all__"
+
+class DuesPaymentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DuesPayment
+        fields = "__all__"
+
+class DuesInItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DuesInItem
+        fields = "__all__"
+
+class DuesOutItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DuesOutItem
+        fields = "__all__"
+
+class DuesPaymentItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DuesPaymentItem
+        depth = 1
+        fields = "__all__"
+
+class UploadDuesPaymentItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DuesPaymentItem
         fields = "__all__"

@@ -1,4 +1,6 @@
 import time
+import requests
+import re
 from django.db import transaction
 from django.conf import settings
 from django.utils import timezone
@@ -8,7 +10,7 @@ from rest_framework.exceptions import NotFound, NotAuthenticated, ParseError, Pe
 from rest_framework import status
 from .models import Player
 from games.models import Game
-from .serializers import PlayerSerializer
+from .serializers import PlayerSerializer, UploadPlayerSerializer
 from games.serializers import TinyGameSerializer
 from superplayers.serializers import SuperPlayerSerializer
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -34,7 +36,8 @@ class PlayerConnecting(APIView):
         team_code = request.data.get("code")
         # print(type(team_code))
         # print(type(player.team.code()))
-        if team_code == str(player.team.code()):
+
+        if team_code == str(player.team.code):
 
             player.connecting_user = user
             player.save()
@@ -121,7 +124,12 @@ class PlayerDetail(APIView):
 
     def delete(self, request, pk):
         player = self.get_object(pk)
-        team = player.team
+        
+        if player.team:
+            team = player.team
+
+        if player.game:
+            team = player.game.team
 
         if team.spvsr != request.user:
             raise PermissionDenied
@@ -129,6 +137,112 @@ class PlayerDetail(APIView):
         player.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PlayerPhoto(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            player = Player.objects.get(pk=pk)
+            return player
+        except Player.DoesNotExist:
+            raise NotFound
+
+    def put(self, request, pk):
+
+        player = self.get_object(pk=pk)
+        team = player.team
+
+        if team.spvsr != request.user:
+            raise PermissionDenied
+
+        def extract_image_id_from_url(url: str) -> str:
+            pattern = r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
+            return None
+
+        print(request.data)
+
+        if player.avatar and request.data.get("avatar"):
+
+            image_id = extract_image_id_from_url(player.avatar)
+
+            if image_id:
+                url = f"https://api.cloudflare.com/client/v4/accounts/{settings.CF_ID}/images/v1/{image_id}"
+            
+                response = requests.delete(url, headers={
+                        "Authorization": f"Bearer {settings.CF_TOKEN}",
+                        "Content-Type": "application/json"
+                        # "X-Auth-Email": "sejun9aldo@gmail.com",
+                        # "X-Auth-Key": settings.CF_GLOBAL_API_KEY
+                })
+
+
+                if response.status_code != 200:  # 204 No Content는 성공적으로 삭제되었음을 의미합니다.
+                    return Response({"error": "Failed to delete image", "details": response.text}, status=response.status_code)
+
+        serializer = UploadPlayerSerializer(player, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    player = serializer.save()
+
+            except Exception as e: 
+                # 어떤 에러가 나든지 라는 뜻.
+                print(e)
+                raise ParseError
+
+            serializer = UploadPlayerSerializer(player)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            print(f"serializer.errors : {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+
+        permission_classes = [IsAuthenticated]
+            
+        player = self.get_object(pk=pk)
+        team = player.team
+
+        if team.spvsr != request.user:
+            raise PermissionDenied
+
+        def extract_image_id_from_url(url: str) -> str:
+            pattern = r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
+            return None
+
+        if player.avatar:
+
+            image_id = extract_image_id_from_url(player.avatar)
+
+            if image_id:
+                url = f"https://api.cloudflare.com/client/v4/accounts/{settings.CF_ID}/images/v1/{image_id}"
+            
+                response = requests.delete(url, headers={
+                        "Authorization": f"Bearer {settings.CF_TOKEN}",
+                        "Content-Type": "application/json"
+                        # "X-Auth-Email": "sejun9aldo@gmail.com",
+                        # "X-Auth-Key": settings.CF_GLOBAL_API_KEY
+                })
+
+
+                if response.status_code != 200:  # 204 No Content는 성공적으로 삭제되었음을 의미합니다.
+                    return Response({"error": "Failed to delete image", "details": response.text}, status=response.status_code)
+
+                player.avatar = ""
+                player.save()
+                
+            return Response({"message": "Image successfully deleted and avatar cleared."}, status=status.HTTP_200_OK)    
 
 class PlayerGames(APIView):
     

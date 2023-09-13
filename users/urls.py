@@ -15,6 +15,7 @@ urlpatterns = [
     path("spvsr/", views.Spvsrs.as_view()),
     path("isspvsr/", views.IsSpvsr.as_view()),
     path("isspvsr/team/", views.IsSpvsrTeam.as_view()),
+    path("isspvsr/team/photo/", views.IsSpvsrTeamPhoto.as_view()),
     path("isspvsr/games/", views.IsSpvsrGames.as_view()),
     path("isspvsr/goals/", views.IsSpvsrGoals.as_view()),
     path("isspvsr/toms/", views.IsSpvsrToms.as_view()),
