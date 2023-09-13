@@ -1074,7 +1074,7 @@ class TeamDuesInItems(APIView):
     def get(self, request, pk, detail_pk):
         dues_detail = self.get_object(detail_pk)
         team_dues_in_items_all = dues_detail.dues_in_items.all()
-        team_dues_in_items_all_sorted = team_dues_in_items_all.order_by("-created_at")
+        team_dues_in_items_all_sorted = team_dues_in_items_all.order_by("-date")
         serializer = DuesInItemSerializer(team_dues_in_items_all_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1159,7 +1159,7 @@ class TeamDuesOutItems(APIView):
     def get(self, request, pk, detail_pk):
         dues_detail = self.get_object(detail_pk)
         team_dues_out_items_all = dues_detail.dues_out_items.all()
-        team_dues_out_items_all_sorted = team_dues_out_items_all.order_by("-created_at")
+        team_dues_out_items_all_sorted = team_dues_out_items_all.order_by("-date")
         serializer = DuesOutItemSerializer(team_dues_out_items_all_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
