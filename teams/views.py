@@ -1353,17 +1353,9 @@ class TeamDuesPaymentItems(APIView):
 
     def get(self, request, pk, payment_pk):
         dues_payment = self.get_object(payment_pk)
-        # annotate를 사용해 payment_order 필드를 추가
-        team_dues_payment_items_all = dues_payment.dues_payment_items.annotate(
-            payment_order=Case(
-                When(payment=DuesPaymentItem.DuesPaymentItemChoices.PAID, then=Value(2)),
-                When(payment=DuesPaymentItem.DuesPaymentItemChoices.NON_PAID, then=Value(1)),
-                When(payment=DuesPaymentItem.DuesPaymentItemChoices.NA, then=Value(3)),
-                default=Value(4),  # 혹시 모를 다른 값들에 대해
-                output_field=IntegerField()
-            )
-        ).order_by("payment_order", "-created_at")  # 먼저 payment_order로 정렬한 후 동일한 카테고리 내에서 created_at으로 정렬
+        team_dues_payment_items_all = dues_payment.dues_payment_items.all().order_by("player__backnumber")
         serializer = DuesPaymentItemSerializer(team_dues_payment_items_all, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, pk, payment_pk):
