@@ -88,7 +88,6 @@ class DuesPaymentItem(CommonModel):
     """ Model DuesPaymentItem Definition """
 
     class DuesPaymentItemChoices(models.TextChoices):
-        NON = ("non", "Non")
         PAID = ("paid", "Paid")
         NON_PAID = ("non_paid", "Non_Paid")
         NA = ("na", "Na")

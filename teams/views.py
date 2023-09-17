@@ -1284,7 +1284,7 @@ class TeamDuesPayment(APIView):
                         DuesPaymentItem.objects.create(
                             dues_payment=dues_payment,
                             player=player,
-                            payment=DuesPaymentItem.DuesPaymentItemChoices.NON
+                            payment=DuesPaymentItem.DuesPaymentItemChoices.NON_PAID
                         )
 
                     # 마지막에 다시 DuesPayment 객체에 대한 serializer를 만들어 응답을 전달합니다.
