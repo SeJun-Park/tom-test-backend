@@ -56,6 +56,23 @@ class TeamDetail(APIView):
     def put(self, request, pk):
         pass
 
+class TeamDetailReadOnly(APIView):
+    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound        
+
+    def get(self, request, pk):
+        team = self.get_object(pk)
+        serializer = TinyTeamSerializer(team)
+        return Response(serializer.data)
+
+
 class TeamSearch(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -1017,7 +1034,7 @@ class TeamDuesDetail(APIView):
 
 class TeamDuesDetailDetail(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1062,7 +1079,7 @@ class TeamDuesDetailDetail(APIView):
 
 class TeamDuesInItems(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1128,7 +1145,7 @@ class TeamDuesInItemDetail(APIView):
 
 class TeamDuesInAmount(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1147,7 +1164,7 @@ class TeamDuesInAmount(APIView):
 
 class TeamDuesOutItems(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1214,7 +1231,7 @@ class TeamDuesOutItemDetail(APIView):
 
 class TeamDuesOutAmount(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1297,7 +1314,7 @@ class TeamDuesPayment(APIView):
 
 class TeamDuesPaymentDetail(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1342,7 +1359,7 @@ class TeamDuesPaymentDetail(APIView):
 
 class TeamDuesPaymentItems(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:

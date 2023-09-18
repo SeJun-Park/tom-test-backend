@@ -20,7 +20,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 
 class GameDetail(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -425,7 +425,7 @@ class GameDailyPlayers(APIView):
     
 class GameQuotas(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
