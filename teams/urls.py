@@ -46,6 +46,7 @@ urlpatterns = [
     path("<int:pk>/dues/payments/items/<int:item_pk>/", views.TeamDuesPaymentItemDetail.as_view()),
     path("<int:pk>/dues/payments/<int:payment_pk>/", views.TeamDuesPaymentDetail.as_view()),
     path("<int:pk>/dues/payments/<int:payment_pk>/items/", views.TeamDuesPaymentItems.as_view()),
+    path("<int:pk>/dues/payments/<int:payment_pk>/items/readonly/", views.TeamDuesPaymentItemsReadOnly.as_view()),
     path("<int:pk>/dues/payments/<int:payment_pk>/items/extra/", views.TeamDuesPaymentItemsExtra.as_view()),
     path("<int:pk>/dues/details/list/", views.TeamDuesDetailList.as_view()),
     path("<int:pk>/dues/payments/list/", views.TeamDuesPaymentList.as_view()),

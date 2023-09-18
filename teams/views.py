@@ -1359,7 +1359,7 @@ class TeamDuesPaymentDetail(APIView):
 
 class TeamDuesPaymentItems(APIView):
 
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
         try:
@@ -1401,6 +1401,35 @@ class TeamDuesPaymentItems(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class TeamDuesPaymentItemsReadOnly(APIView):
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_dues_payment(self, pk):
+        try:
+            dues_payment = DuesPayment.objects.get(pk=pk)
+            return dues_payment
+        except TeamDuesPayment.DoesNotExist:  # 수정: 올바른 Exception 이름으로 변경
+            raise NotFound
+
+    def get(self, request, pk, payment_pk):
+        dues_payment = self.get_dues_payment(payment_pk)
+
+        # annotate를 사용해 payment_order 필드를 추가
+        team_dues_payment_items_all = dues_payment.dues_payment_items.annotate(
+            payment_order=Case(
+                When(payment=DuesPaymentItem.DuesPaymentItemChoices.PAID, then=Value(2)),
+                When(payment=DuesPaymentItem.DuesPaymentItemChoices.NON_PAID, then=Value(1)),
+                When(payment=DuesPaymentItem.DuesPaymentItemChoices.NA, then=Value(3)),
+                default=Value(4),  # 혹시 모를 다른 값들에 대해
+                output_field=IntegerField()
+            )
+        ).order_by("payment_order", "-created_at")  # 먼저 payment_order로 정렬한 후 동일한 카테고리 내에서 created_at으로 정렬
+
+        serializer = DuesPaymentItemSerializer(team_dues_payment_items_all, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TeamDuesPaymentItemDetail(APIView):
