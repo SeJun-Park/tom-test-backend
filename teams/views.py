@@ -19,7 +19,7 @@ from players.serializers import TinyPlayerSerializer, PlayerSerializer, UploadPl
 from games.serializers import TinyGameSerializer, UploadGameSerializer
 from medias.serializers import PhotoSerializer
 from superplayers.serializers import SuperPlayerSerializer
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 
 # Create your views here.
 
@@ -932,7 +932,7 @@ class TeamScheduleDetail(APIView):
 
 class TeamSchedulesMonth(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -956,7 +956,7 @@ class TeamSchedulesMonth(APIView):
 
 class TeamSchedulesByMonth(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_object(self, pk):
         try:
