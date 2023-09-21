@@ -138,8 +138,6 @@ class Team(CommonModel):
     since = models.PositiveIntegerField()
     founder = models.OneToOneField("users.User", on_delete=models.CASCADE, related_name="team_founder")
     spvsrs = models.ManyToManyField("users.User", related_name="teams")
-    plan = models.CharField(max_length=150, default="basic", blank=True, null=True)
-    code = models.PositiveIntegerField(blank=True, null=True)
 
     def __str__(self) -> str:
         return self.name

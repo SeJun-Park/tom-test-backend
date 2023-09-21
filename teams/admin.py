@@ -5,7 +5,7 @@ from .models import Team, TeamFeed, TeamNoti, TeamSchedule, TeamVote, DuesDetail
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ("name", "pk", "since", "code", "founder", "plan")
+    list_display = ("name", "pk", "since", "founder")
 
 @admin.register(TeamNoti)
 class TeamNotiAdmin(admin.ModelAdmin):

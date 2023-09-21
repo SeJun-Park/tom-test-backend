@@ -33,11 +33,8 @@ class PlayerConnecting(APIView):
         
         player = self.get_object(pk)
         user = request.user
-        team_code = request.data.get("code")
-        # print(type(team_code))
-        # print(type(player.team.code()))
 
-        if team_code == str(player.team.code):
+        if user.is_player:
 
             player.connecting_user = user
             player.save()
@@ -84,7 +81,7 @@ class PlayerConnect(APIView):
     def post(self, request, pk):
         
         player = self.get_object(pk)
-        user = request.user
+        
         connecting_user = player.connecting_user
         player.connected_user = connecting_user
         player.connecting_user = None

@@ -17,11 +17,9 @@ class TinyTeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = (
             "pk",
-            "code",
             "avatar",
             "description",
             "name",
-            "plan",
             "since",
             "is_spvsr"
         )
