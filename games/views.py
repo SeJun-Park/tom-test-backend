@@ -10,7 +10,7 @@ from rest_framework.exceptions import NotFound, NotAuthenticated, ParseError, Pe
 from rest_framework import status
 from .models import Game, Vote, GoalPlayer, VoteBallot, GameQuota, GameQuotaLineup
 from players.models import Player
-from players.serializers import UploadPlayerSerializer
+from players.serializers import UploadPlayerSerializer, TinyPlayerSerializer
 from .serializers import GameSerializer, UploadGameSerializer, VoteSerializer, GameQuotaSerializer
 from medias.serializers import VideoSerializer, PhotoSerializer
 
@@ -37,8 +37,10 @@ class GameDetail(APIView):
     def put(self, request, pk):
 
         game = self.get_object(pk)
+        team = game.team
+        user = request.user
 
-        if game.team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
          
         print(request.data)
@@ -98,8 +100,9 @@ class GameDetail(APIView):
 
         game = self.get_object(pk)
         team = game.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         game.delete()
@@ -329,8 +332,9 @@ class GameVideos(APIView):
         try:
             game = self.get_object(pk=pk)
             team = game.team
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -367,8 +371,9 @@ class GamePhotos(APIView):
     def post(self, request, pk):
         game = self.get_object(pk)
         team = game.team
+        user = request.user
 
-        if request.user != team.spvsr:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         serializer = PhotoSerializer(data=request.data)
@@ -397,8 +402,9 @@ class GameDailyPlayers(APIView):
         try:
             game = self.get_object(pk=pk)
             team = game.team
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -489,8 +495,9 @@ class GameQuotas(APIView):
     def delete(self, request, pk):
         game = self.get_object(pk)
         team = game.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         game.quotas.all().delete()    
@@ -545,3 +552,5 @@ class GameQuotaDetail(APIView):
             
         except Exception as e:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

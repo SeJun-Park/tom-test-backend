@@ -131,7 +131,9 @@ class PlayerDetail(APIView):
         if player.game:
             team = player.game.team
 
-        if team.spvsr != request.user:
+        user = request.user
+
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         player.delete()
@@ -153,8 +155,9 @@ class PlayerPhoto(APIView):
 
         player = self.get_object(pk=pk)
         team = player.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         def extract_image_id_from_url(url: str) -> str:
@@ -210,8 +213,9 @@ class PlayerPhoto(APIView):
             
         player = self.get_object(pk=pk)
         team = player.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         def extract_image_id_from_url(url: str) -> str:

@@ -41,8 +41,9 @@ class Photos(APIView):
 
         photo = self.get_object(pk)
         team = photo.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         def extract_image_id_from_url(url: str) -> str:
@@ -89,8 +90,9 @@ class Videos(APIView):
 
         video = self.get_object(pk)
         team = video.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         video.delete()

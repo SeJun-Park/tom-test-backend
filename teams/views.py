@@ -60,7 +60,7 @@ class TeamDetail(APIView):
         return Response(serializer.data)
 
     def put(self, request, pk):
-                
+
         team = self.get_object(pk)
         serializer = TinyTeamSerializer(team, data=request.data, partial=True)
 
@@ -178,7 +178,6 @@ class TeamPhoto(APIView):
             return Response({"message": "Image successfully deleted and avatar cleared."}, status=status.HTTP_200_OK)
 
 
-
 class TeamDetailReadOnly(APIView):
     
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -228,8 +227,9 @@ class TeamPlayers(APIView):
     def post(self, request, pk):
         try:
             team = self.get_object(pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -378,8 +378,9 @@ class TeamGames(APIView):
     def post(self, request, pk):
 
         team = self.get_object(pk)
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied 
 
         serializer = UploadGameSerializer(data=request.data)
@@ -827,8 +828,9 @@ class TeamFeeds(APIView):
     def post(self, request, pk):
         try:
             team = self.get_object(pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -880,9 +882,10 @@ class TeamFeedDetail(APIView):
 
     def delete(self, request, pk, feed_pk):
         feed = self.get_object(feed_pk)
+        user = request.user
         team = feed.team
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         feed.delete()
@@ -903,8 +906,9 @@ class TeamFeedPhotos(APIView):
     def post(self, request, pk, feed_pk):
         feed = self.get_object(pk=feed_pk)
         team = feed.team
+        user = request.user
 
-        if request.user != team.spvsr:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         serializer = PhotoSerializer(data=request.data)
@@ -977,8 +981,9 @@ class TeamSchedules(APIView):
     def post(self, request, pk):
         try:
             team = self.get_object(pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             # # 1. 요청에서 date와 time 값을 추출
@@ -1045,8 +1050,9 @@ class TeamScheduleDetail(APIView):
     def delete(self, request, pk, schedule_pk):
         schedule = self.get_object(schedule_pk)
         team = schedule.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         schedule.delete()
@@ -1132,8 +1138,9 @@ class TeamDuesDetail(APIView):
     def post(self, request, pk):
         try:
             team = Team.objects.get(pk=pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -1192,8 +1199,9 @@ class TeamDuesDetailDetail(APIView):
 
         dues_detail = self.get_object(detail_pk)
         team = dues_detail.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         dues_detail.delete()
@@ -1222,8 +1230,9 @@ class TeamDuesInItems(APIView):
         try:
             dues_detail = self.get_object(pk=detail_pk)
             team = Team.objects.get(pk=pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -1258,8 +1267,9 @@ class TeamDuesInItemDetail(APIView):
         dues_in_item = self.get_object(item_pk)
         dues_detail = dues_in_item.dues_detail
         team = dues_detail.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         dues_in_item.delete()
@@ -1307,8 +1317,9 @@ class TeamDuesOutItems(APIView):
         try:
             dues_detail = self.get_object(pk=detail_pk)
             team = Team.objects.get(pk=pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -1344,7 +1355,9 @@ class TeamDuesOutItemDetail(APIView):
         dues_detail = dues_out_item.dues_detail
         team = dues_detail.team
 
-        if team.spvsr != request.user:
+        user = request.user
+
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         dues_out_item.delete()
@@ -1405,8 +1418,9 @@ class TeamDuesPayment(APIView):
     def post(self, request, pk):
         try:
             team = Team.objects.get(pk=pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -1472,8 +1486,9 @@ class TeamDuesPaymentDetail(APIView):
 
         dues_payment = self.get_object(payment_pk)
         team = dues_payment.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         dues_payment.delete()
@@ -1502,8 +1517,9 @@ class TeamDuesPaymentItems(APIView):
         try:
             dues_payment = self.get_object(pk=payment_pk)
             team = Team.objects.get(pk=pk)
+            user = request.user
 
-            if team.spvsr != request.user:
+            if not team.spvsrs.filter(id=user.id).exists():
                 raise PermissionDenied
 
             data = request.data.copy()
@@ -1593,8 +1609,9 @@ class TeamDuesPaymentItemDetail(APIView):
         dues_payment_item = self.get_object(item_pk)
         dues_payment = dues_payment_item.dues_payment
         team = dues_payment.team
+        user = request.user
 
-        if team.spvsr != request.user:
+        if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
 
         dues_payment_item.delete()

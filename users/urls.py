@@ -12,13 +12,10 @@ urlpatterns = [
     path("isplayer/goals/", views.IsPlayerGoals.as_view()),
     path("isplayer/toms/", views.IsPlayerToms.as_view()),
     path("isplayer/superplayers/", views.IsPlayerSuperPlayers.as_view()),
-    path("spvsr/", views.Spvsrs.as_view()),
     path("isspvsr/", views.IsSpvsr.as_view()),
     path("isspvsr/teams/", views.IsSpvsrTeams.as_view()),
-    path("isspvsr/team/photo/", views.IsSpvsrTeamPhoto.as_view()),
     path("isspvsr/games/", views.IsSpvsrGames.as_view()),
     path("isspvsr/goals/", views.IsSpvsrGoals.as_view()),
     path("isspvsr/toms/", views.IsSpvsrToms.as_view()),
     path("isspvsr/superplayers/", views.IsSpvsrSuperPlayers.as_view()),
-    path("isspvsr/login/", views.IsSpvsrLogIn.as_view()),
 ]
