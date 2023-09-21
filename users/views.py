@@ -47,10 +47,18 @@ class LogOut(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        user = request.user
+
+        # 속성을 False로 설정
+        user.is_player = False
+        user.is_spvsr = False
+
+        # 변경사항을 데이터베이스에 저장
+        user.save()
         logout(request)
         return Response({"ok" : "bye"})
 
-class IsPlayerKakaoLogIn(APIView):
+class KakaoLogIn(APIView):
 
     def post(self, request):
         try:
@@ -85,7 +93,15 @@ class IsPlayerKakaoLogIn(APIView):
             profile = kakao_account.get("profile")
         
             try:
-                user = User.objects.get(email=kakao_account.get("email"), is_player=True)
+                user = User.objects.get(email=kakao_account.get("email"))
+
+                 # 속성을 False로 설정
+                user.is_player = False
+                user.is_spvsr = False
+
+                # 변경사항을 데이터베이스에 저장
+                user.save()
+
                 login(request, user)
                 return Response(status=status.HTTP_200_OK)
 
@@ -93,8 +109,7 @@ class IsPlayerKakaoLogIn(APIView):
                 user = User.objects.create(
                     email = kakao_account.get("email"),
                     username = profile.get("nickname"),
-                    avatar = profile.get("profile_image_url"),
-                    is_player = True
+                    avatar = profile.get("profile_image_url")
                 )
 
                 user.set_unusable_password()
@@ -253,45 +268,20 @@ class IsSpvsr(APIView):
         return Response(serializer.data)
         
 
-class IsSpvsrTeam(APIView):
+class IsSpvsrTeams(APIView):
     
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
             user = request.user
-            team = user.team
+            teams = user.teams.all()
 
-            serializer = TinyTeamSerializer(team)
+            serializer = TinyTeamSerializer(teams, many=True)
 
             return Response(serializer.data)
         except Team.DoesNotExist:
             raise NotFound
-
-    def put(self, request):
-
-        user = request.user
-        team = user.team
-
-        serializer = TinyTeamSerializer(team, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            try:
-                with transaction.atomic():
-                    team = serializer.save()
-
-            except Exception as e: 
-                # 어떤 에러가 나든지 라는 뜻.
-                print(e)
-                raise ParseError
-
-            serializer = TinyTeamSerializer(team)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        else:
-            print(f"serializer.errors : {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class IsSpvsrTeamPhoto(APIView):

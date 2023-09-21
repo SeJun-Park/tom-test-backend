@@ -4,6 +4,15 @@ from medias.serializers import PhotoSerializer
 
 class TinyTeamSerializer(serializers.ModelSerializer):
 
+    is_spvsr = serializers.SerializerMethodField()
+
+    def get_is_spvsr(self, team):
+        request = self.context.get("request")
+        if request:
+            user = request.user
+            return team.spvsrs.filter(id=user.id).exists()
+        return False
+
     class Meta:
         model = Team
         fields = (
@@ -14,6 +23,7 @@ class TinyTeamSerializer(serializers.ModelSerializer):
             "name",
             "plan",
             "since",
+            "is_spvsr"
         )
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -73,7 +83,7 @@ class TeamSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request:
             user = request.user
-            return (team.spvsr == user)
+            return team.spvsrs.filter(id=user.id).exists()
         return False
 
     class Meta:

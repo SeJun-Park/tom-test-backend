@@ -28,11 +28,15 @@ class Teams(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = UploadTeamSerializer(data=request.data)
+        data = request.data.copy()
+        data['founder'] = request.user.id  # founder 정보 추가
+
+        serializer = UploadTeamSerializer(data=data)
         if serializer.is_valid():
             user = request.user
-            team = serializer.save(spvsr=user)
-            serializer = UploadTeamSerializer(team, context={"request" : request})
+            team = serializer.save()  # founder가 이미 시리얼라이저에 설정되어 있으므로 인자로 전달할 필요 없음
+            team.spvsr.add(user)  # spvsr에 request.user 추가
+            serializer = UploadTeamSerializer(team)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -54,7 +58,27 @@ class TeamDetail(APIView):
         return Response(serializer.data)
 
     def put(self, request, pk):
-        pass
+                
+        team = self.get_object(pk)
+        serializer = TinyTeamSerializer(team, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    team = serializer.save()
+
+            except Exception as e: 
+                # 어떤 에러가 나든지 라는 뜻.
+                print(e)
+                raise ParseError
+
+            serializer = TinyTeamSerializer(team)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            print(f"serializer.errors : {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TeamDetailReadOnly(APIView):
     

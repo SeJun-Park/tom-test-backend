@@ -60,8 +60,6 @@ class SpvsrUserSerializer(serializers.ModelSerializer):
 
 class IsSpvsrUserSerializer(serializers.ModelSerializer):
 
-    team = TinyTeamSerializer()
-
     class Meta:
         model = User
         exclude = (

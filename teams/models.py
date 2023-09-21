@@ -136,7 +136,8 @@ class Team(CommonModel):
     name = models.CharField(max_length=150, unique=True)
     description = models.CharField(max_length=150, blank=True)
     since = models.PositiveIntegerField()
-    spvsr = models.OneToOneField("users.User", on_delete=models.CASCADE, related_name="team", default=None)
+    founder = models.OneToOneField("users.User", on_delete=models.CASCADE, related_name="team_founder", null=True)
+    spvsrs = models.ManyToManyField("users.User", related_name="teams")
     plan = models.CharField(max_length=150, default="basic",)
     code = models.PositiveIntegerField()
 
