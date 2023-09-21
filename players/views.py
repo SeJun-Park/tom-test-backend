@@ -41,6 +41,7 @@ class PlayerConnecting(APIView):
 
             serializer = PlayerSerializer(player)
             return Response(serializer.data, status=status.HTTP_200_OK)
+            
         
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
