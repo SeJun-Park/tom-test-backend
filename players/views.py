@@ -29,7 +29,7 @@ class PlayerConnecting(APIView):
         except Player.DoesNotExist:
             raise NotFound
 
-    def post(self, request, pk):
+    def put(self, request, pk):
         
         player = self.get_object(pk)
         user = request.user
@@ -81,7 +81,7 @@ class PlayerConnect(APIView):
     def post(self, request, pk):
         
         player = self.get_object(pk)
-        
+
         connecting_user = player.connecting_user
         player.connected_user = connecting_user
         player.connecting_user = None
