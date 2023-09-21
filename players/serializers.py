@@ -40,11 +40,7 @@ class TinyPlayerSerializer(serializers.ModelSerializer):
 
 class PlayerSerializer(serializers.ModelSerializer):
 
-    # team = TinyTeamSerializer()
-    # games = TinyGameSerializer(many=True)
-    # tom_games = TinyGameSerializer(many=True)
-    # superplayers = TinyPlayerSerializer(many=True)
-    # goals = GoalPlayerSerializer(many=True)
+    team = TinyTeamSerializer()
 
     class Meta:
         model = Player

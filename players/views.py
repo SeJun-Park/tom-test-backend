@@ -41,7 +41,6 @@ class PlayerConnecting(APIView):
 
             serializer = PlayerSerializer(player)
             return Response(serializer.data, status=status.HTTP_200_OK)
-            
         
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -105,7 +104,7 @@ class PlayerDetail(APIView):
 
     def get(self, request, pk):
         player = self.get_object(pk)
-        serializer = PlayerSerializer(player)
+        serializer = PlayerSerializer(player, context={"request" : request})
         return Response(serializer.data)
 
     def put(self, request, pk):
