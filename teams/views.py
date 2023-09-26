@@ -37,7 +37,7 @@ class Teams(APIView):
         if serializer.is_valid():
             user = request.user
             team = serializer.save()  # founder가 이미 시리얼라이저에 설정되어 있으므로 인자로 전달할 필요 없음
-            team.spvsr.add(user)  # spvsr에 request.user 추가
+            team.spvsrs.add(user)  # spvsr에 request.user 추가
             serializer = UploadTeamSerializer(team)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
