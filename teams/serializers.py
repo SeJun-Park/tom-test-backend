@@ -92,6 +92,13 @@ class TeamSerializer(serializers.ModelSerializer):
             return team.connecting_spvsrs.filter(id=user.id).exists()
         return False
 
+    def get_is_founder(self, team):
+        request = self.context.get("request")
+        if request:
+            user = request.user
+            return (team.founder == user)
+        return False
+
     class Meta:
         model = Team
         fields = "__all__"
