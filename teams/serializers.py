@@ -37,6 +37,7 @@ class TeamSerializer(serializers.ModelSerializer):
     is_connecting_player_pk = serializers.SerializerMethodField()
     is_spvsr = serializers.SerializerMethodField()
     is_connecting_spvsr = serializers.SerializerMethodField()
+    is_founder = serializers.SerializerMethodField()
 
     def get_is_connected(self, team):
         request = self.context.get("request")
