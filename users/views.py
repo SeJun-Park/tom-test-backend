@@ -42,6 +42,12 @@ class Me(APIView):
         else:
             return Response(serializer.errors)
 
+    def delete(self, request):
+        user = request.user
+        # Optional: Add any additional logic here if needed, for example, sending a confirmation email
+        user.delete()
+        return Response({"message": "User account has been deleted"}, status=status.HTTP_200_OK)
+
 class LogOut(APIView):
 
     permission_classes = [IsAuthenticated]
