@@ -136,8 +136,9 @@ class Team(CommonModel):
     name = models.CharField(max_length=150, unique=True)
     description = models.CharField(max_length=150, blank=True)
     since = models.PositiveIntegerField()
-    founder = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="team_founder")
+    founder = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="team_founder", blank=True)
     spvsrs = models.ManyToManyField("users.User", related_name="teams", blank=True)
+    connecting_spvsrs = models.ManyToManyField("users.User", related_name="connecting_teams", blank=True)
 
     def __str__(self) -> str:
         return self.name

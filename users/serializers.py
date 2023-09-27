@@ -46,16 +46,27 @@ class IsPlayerUserSerializer(serializers.ModelSerializer):
 
 class SpvsrUserSerializer(serializers.ModelSerializer):
 
+    is_founder = serializers.SerializerMethodField()
+
+    def get_is_founder(self, user):
+        team = self.context.get("team")
+
+        if team:
+            return (team.founder == user)
+        return False
+
     class Meta:
         model = User
-        exclude = (
-            "password",
-            "is_superuser",
-            "id",
-            "is_staff",
-            "is_active",
-            "groups",
-            "user_permissions",
+        fields = (
+                "last_login",
+                "username",
+                "avatar",
+                "email",
+                "avatar",
+                "is_player",
+                "is_spvsr",
+                "is_founder",
+                "date_joined",
         )
 
 class IsSpvsrUserSerializer(serializers.ModelSerializer):

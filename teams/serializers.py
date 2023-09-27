@@ -36,6 +36,7 @@ class TeamSerializer(serializers.ModelSerializer):
     is_connecting = serializers.SerializerMethodField()
     is_connecting_player_pk = serializers.SerializerMethodField()
     is_spvsr = serializers.SerializerMethodField()
+    is_connecting_spvsr = serializers.SerializerMethodField()
 
     def get_is_connected(self, team):
         request = self.context.get("request")
@@ -82,6 +83,13 @@ class TeamSerializer(serializers.ModelSerializer):
         if request:
             user = request.user
             return team.spvsrs.filter(id=user.id).exists()
+        return False
+
+    def get_is_connecting_spvsr(self, team):
+        request = self.context.get("request")
+        if request:
+            user = request.user
+            return team.connecting_spvsrs.filter(id=user.id).exists()
         return False
 
     class Meta:
