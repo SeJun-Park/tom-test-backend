@@ -1680,7 +1680,7 @@ class TeamDuesPaymentItems(APIView):
 
             data = request.data.copy()
             data['dues_payment'] = dues_payment.id
-            data['payment'] = DuesPaymentItem.DuesPaymentItemChoices.NON
+            data['payment'] = DuesPaymentItem.DuesPaymentItemChoices.NON_PAID
 
             serializer = UploadDuesPaymentItemSerializer(data=data)
 
