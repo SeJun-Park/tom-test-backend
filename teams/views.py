@@ -552,9 +552,10 @@ class TeamGames(APIView):
                             participant = Player.objects.get(pk=participant_pk)
                             game.participants.add(participant)
                         
-                    game_datetime = timezone.datetime.combine(game.date, game.end_time)
-                    vote_start = game_datetime
-                    vote_end = game_datetime + timedelta(days=2)
+                    game_datetime_start = timezone.datetime.combine(game.date, game.start_time)
+                    game_datetime_end = timezone.datetime.combine(game.date, game.end_time)
+                    vote_start = game_datetime_end
+                    vote_end = game_datetime_end + timedelta(days=2)
                     vote_end = vote_end.replace(hour=0, minute=0, second=0)
 
                     vote_start = timezone.make_aware(vote_start)
@@ -594,7 +595,7 @@ class TeamGames(APIView):
                     TeamSchedule.objects.create(
                         team=team,
                         game=game,
-                        dateTime=game_datetime,
+                        dateTime=game_datetime_start,
                         category="game",
                         title=f"VS {game.vsteam}"
                     )
