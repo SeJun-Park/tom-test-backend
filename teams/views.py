@@ -63,7 +63,7 @@ class TeamsRecently(APIView):
 
     def get(self, request):
         teams = Team.objects.order_by('-created_at')[:3]
-        serializer = TeamSerializer(teams, many=True)
+        serializer = TinyTeamSerializer(teams, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
