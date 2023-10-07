@@ -56,6 +56,17 @@ class Teams(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class TeamsRecently(APIView):
+    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        teams = Team.objects.order_by('-created_at')[:3]
+        serializer = TeamSerializer(teams, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class TeamDetail(APIView):
     
     permission_classes = [IsAuthenticated]
@@ -210,7 +221,7 @@ class TeamDetailReadOnly(APIView):
 
 class TeamSearch(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         search_name = request.data.get("name")

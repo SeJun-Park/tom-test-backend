@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path("", views.Teams.as_view()),
     path("search/", views.TeamSearch.as_view()),
+    path("recently/", views.TeamsRecently.as_view()),
     path("<int:pk>/", views.TeamDetail.as_view()),
     path("<int:pk>/photo", views.TeamPhoto.as_view()),
     path("<int:pk>/readonly/", views.TeamDetailReadOnly.as_view()),
