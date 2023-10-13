@@ -59,6 +59,7 @@ class SpvsrUserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
                 "last_login",
+                "id,"
                 "username",
                 "avatar",
                 "email",
@@ -76,7 +77,6 @@ class IsSpvsrUserSerializer(serializers.ModelSerializer):
         exclude = (
             "password",
             "is_superuser",
-            "id",
             "is_staff",
             "is_active",
             "groups",

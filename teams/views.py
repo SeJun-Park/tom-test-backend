@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, NotAuthenticated, ParseError, PermissionDenied
 from rest_framework import status
 from .models import Team, TeamFeed, TeamNoti, TeamSchedule, DuesDetail, DuesPayment, DuesPaymentItem, DuesInItem, DuesOutItem
+from users.models import User
 from players.models import Player
 from games.models import Game, GoalPlayer, Vote
 from .serializers import TeamSerializer, TinyTeamSerializer, UploadTeamSerializer, UploadTeamFeedSerializer, TeamFeedSerializer, TeamNotiSerializer, TeamScheduleSerializer, TeamVoteSerializer, DuesDetailSerializer, DuesPaymentSerializer, DuesInItemSerializer, DuesOutItemSerializer, DuesPaymentItemSerializer, UploadDuesPaymentItemSerializer
@@ -336,7 +337,7 @@ class TeamSpvsrsConnecting(APIView):
         team = self.get_object(pk)
         user = request.user
 
-        if user.is_spvsr & user not in team.connecting_spvsrs.all():
+        if user.is_spvsr and user not in team.connecting_spvsrs.all():
 
             team.connecting_spvsrs.add(user)
             team.save()
@@ -347,7 +348,7 @@ class TeamSpvsrsConnecting(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class TeamSpvsrsConnectingCancel(APIView):
+class TeamSpvsrsConnectingCancelByOneself(APIView):
 
     permission_classes = [IsAuthenticated]
 
@@ -363,11 +364,42 @@ class TeamSpvsrsConnectingCancel(APIView):
         team = self.get_object(pk)
         user = request.user
 
-        if user.is_spvsr & user in team.connecting_spvsrs.all():
+        if user.is_spvsr and user in team.connecting_spvsrs.all():
 
             team.connecting_spvsrs.remove(user)
             team.save()
 
+            serializer = SpvsrUserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class TeamSpvsrsConnectingCancelByFounder(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound
+
+    def put(self, request, pk):
+        
+        team = self.get_object(pk)
+        user_id = request.data.get("userId")
+
+        try:
+            # User 인스턴스를 가져옵니다.
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise NotFound
+
+        if user.is_spvsr and user in team.connecting_spvsrs.all():
+            team.connecting_spvsrs.remove(user)
+            team.save()
             serializer = SpvsrUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -388,9 +420,16 @@ class TeamSpvsrsConnect(APIView):
     def post(self, request, pk):
         
         team = self.get_object(pk)
-        user = request.user
+        user_id = request.data.get("userId")
+        founder = request.user
 
-        if team.founder.id != user.id & user in team.connecting_spvsrs.all():
+        try:
+            # User 인스턴스를 가져옵니다.
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise NotFound
+
+        if (team.founder == founder) and (user in team.connecting_spvsrs.all()):
             team.connecting_spvsrs.remove(user)
             team.spvsrs.add(user)
             team.save()
@@ -400,7 +439,7 @@ class TeamSpvsrsConnect(APIView):
         
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class TeamSpvsrsConnectCancel(APIView):
+class TeamSpvsrsConnectCancelByOneself(APIView):
 
     permission_classes = [IsAuthenticated]
 
@@ -416,7 +455,7 @@ class TeamSpvsrsConnectCancel(APIView):
         team = self.get_object(pk)
         user = request.user
 
-        if user.is_spvsr & user in team.spvsrs.all():
+        if user.is_spvsr and user in team.spvsrs.all():
 
             team.spvsrs.remove(user)
             team.save()
@@ -426,6 +465,38 @@ class TeamSpvsrsConnectCancel(APIView):
         
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
+class TeamSpvsrsConnectCancelByFounder(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+            return team
+        except Team.DoesNotExist:
+            raise NotFound
+
+    def put(self, request, pk):
+        
+        team = self.get_object(pk)
+        user_id = request.data.get("userId")
+
+        try:
+            # User 인스턴스를 가져옵니다.
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise NotFound
+
+        if user.is_spvsr and user in team.spvsrs.all():
+
+            team.spvsrs.remove(user)
+            team.save()
+
+            serializer = SpvsrUserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamPlayersGoalStats(APIView):
