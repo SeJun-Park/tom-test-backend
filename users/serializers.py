@@ -59,7 +59,7 @@ class SpvsrUserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
                 "last_login",
-                "id,"
+                "id",
                 "username",
                 "avatar",
                 "email",
