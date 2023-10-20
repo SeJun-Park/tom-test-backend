@@ -1,4 +1,5 @@
 import time
+from datetime import timedelta
 from django.utils.timezone import activate, get_current_timezone
 from collections import Counter
 from django.db import transaction
@@ -13,6 +14,7 @@ from players.models import Player
 from players.serializers import UploadPlayerSerializer, TinyPlayerSerializer
 from .serializers import GameSerializer, UploadGameSerializer, VoteSerializer, GameQuotaSerializer
 from medias.serializers import VideoSerializer, PhotoSerializer
+from teams.models import TeamNoti, TeamSchedule
 
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
@@ -35,14 +37,13 @@ class GameDetail(APIView):
         return Response(serializer.data)
 
     def put(self, request, pk):
-
         game = self.get_object(pk)
         team = game.team
         user = request.user
 
         if not team.spvsrs.filter(id=user.id).exists():
             raise PermissionDenied
-         
+
         print(request.data)
 
         serializer = UploadGameSerializer(game, data=request.data, partial=True)
@@ -68,7 +69,35 @@ class GameDetail(APIView):
                         vote = Vote.objects.get(game=game)
                         vote.candidates.clear()
                         vote.candidates.set(game.participants.all())
+
+                        game_datetime_start = timezone.datetime.combine(game.date, game.start_time)
+                        game_datetime_end = timezone.datetime.combine(game.date, game.end_time)
+                        vote_start = game_datetime_end
+                        vote_end = game_datetime_end + timedelta(days=2)
+                        vote_end = vote_end.replace(hour=0, minute=0, second=0)
+
+                        vote_start = timezone.make_aware(vote_start)
+                        vote_end = timezone.make_aware(vote_end)
+
+                        vote.start = vote_start
+                        vote.end = vote_end
+                        vote.save()
+                        
                     except Vote.DoesNotExist:
+                        pass
+
+                    try:
+                        noti = TeamNoti.objects.get(team=team, game=game, category="tom")
+                        noti.dateTime = timezone.make_aware(game_datetime_end)
+                        noti.save()
+                    except TeamNoti.DoesNotExist:
+                        pass
+
+                    try:
+                        schedule = TeamSchedule.objects.get(team=team, game=game)
+                        schedule.dateTime = timezone.make_aware(game_datetime_start)
+                        schedule.save()
+                    except TeamSchedule.DoesNotExist:
                         pass
 
                     goals = request.data.get("goals")
@@ -89,12 +118,12 @@ class GameDetail(APIView):
                     serializer = UploadGameSerializer(game)
 
                     return Response(serializer.data, status=status.HTTP_200_OK)
-            except Exception as e: 
-                # 어떤 에러가 나든지 라는 뜻.
+            except Exception as e:
                 print(e)
                 raise ParseError
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def delete(self, request, pk):
 
