@@ -96,6 +96,7 @@ class GameDetail(APIView):
                     try:
                         schedule = TeamSchedule.objects.get(team=team, game=game)
                         schedule.dateTime = timezone.make_aware(game_datetime_start)
+                        schedule.title = f"VS {game.vsteam}"
                         schedule.save()
                     except TeamSchedule.DoesNotExist:
                         pass
