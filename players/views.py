@@ -93,7 +93,7 @@ class PlayerConnect(APIView):
 
 class PlayerDetail(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -247,7 +247,7 @@ class PlayerPhoto(APIView):
 
 class PlayerGames(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -265,7 +265,7 @@ class PlayerGames(APIView):
 
 class PlayerGoalGames(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -283,7 +283,7 @@ class PlayerGoalGames(APIView):
 
 class PlayerGoals(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -307,7 +307,7 @@ class PlayerGoals(APIView):
 
 class PlayerTOMS(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:

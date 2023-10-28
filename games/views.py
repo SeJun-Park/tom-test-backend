@@ -349,7 +349,7 @@ class GameVote(APIView):
 
 class GameVideos(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -389,7 +389,7 @@ class GameVideos(APIView):
 
 class GamePhotos(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:

@@ -17,7 +17,7 @@ from .models import Team, TeamFeed, TeamNoti, TeamSchedule, DuesDetail, DuesPaym
 from users.models import User
 from players.models import Player
 from games.models import Game, GoalPlayer, Vote
-from .serializers import TeamSerializer, TinyTeamSerializer, UploadTeamSerializer, UploadTeamFeedSerializer, TeamFeedSerializer, TeamNotiSerializer, TeamScheduleSerializer, TeamVoteSerializer, DuesDetailSerializer, DuesPaymentSerializer, DuesInItemSerializer, DuesOutItemSerializer, DuesPaymentItemSerializer, UploadDuesPaymentItemSerializer
+from .serializers import TeamSerializer, TinyTeamSerializer, ReadOnlyTeamSerializer, UploadTeamSerializer, UploadTeamFeedSerializer, TeamFeedSerializer, TeamNotiSerializer, TeamScheduleSerializer, TeamVoteSerializer, DuesDetailSerializer, DuesPaymentSerializer, DuesInItemSerializer, DuesOutItemSerializer, DuesPaymentItemSerializer, UploadDuesPaymentItemSerializer
 from players.serializers import TinyPlayerSerializer, PlayerSerializer, UploadPlayerSerializer
 from games.serializers import TinyGameSerializer, UploadGameSerializer
 from medias.serializers import PhotoSerializer
@@ -216,7 +216,7 @@ class TeamDetailReadOnly(APIView):
 
     def get(self, request, pk):
         team = self.get_object(pk)
-        serializer = TinyTeamSerializer(team)
+        serializer = ReadOnlyTeamSerializer(team)
         return Response(serializer.data)
 
 
@@ -233,7 +233,7 @@ class TeamSearch(APIView):
 
 class TeamPlayers(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -501,7 +501,7 @@ class TeamSpvsrsConnectCancelByFounder(APIView):
 
 class TeamPlayersGoalStats(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -520,7 +520,7 @@ class TeamPlayersGoalStats(APIView):
 
 class TeamPlayersTOMStats(APIView):
         
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -539,7 +539,7 @@ class TeamPlayersTOMStats(APIView):
 
 class TeamPlayersConnected(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -596,7 +596,7 @@ class TeamPlayersConnecting(APIView):
 
 class TeamGames(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -695,7 +695,7 @@ class TeamGames(APIView):
 
 class TeamGamesRelative(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -736,7 +736,7 @@ class TeamGamesRelative(APIView):
 
 class TeamGoals(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -765,7 +765,7 @@ class TeamGoals(APIView):
 
 class TeamGoalsRelative(APIView):
         
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -797,7 +797,7 @@ class TeamGoalsRelative(APIView):
 
 class TeamGoalsAgainst(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -826,7 +826,7 @@ class TeamGoalsAgainst(APIView):
 
 class TeamGoalsAgainstRelative(APIView):
         
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -877,7 +877,7 @@ class TeamSuperPlayers(APIView):
 
 class TeamVSteams(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -905,7 +905,7 @@ class TeamVSteams(APIView):
 
 class TeamStats(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -942,7 +942,7 @@ class TeamStats(APIView):
 
 class TeamStatsRelative(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -982,7 +982,7 @@ class TeamStatsRelative(APIView):
 
 class TeamTomVoteIng(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1008,7 +1008,7 @@ class TeamTomVoteIng(APIView):
 
 class TeamToms(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1029,7 +1029,7 @@ class TeamToms(APIView):
 
 class TeamVotes(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1047,7 +1047,7 @@ class TeamVotes(APIView):
 
 class TeamFeeds(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1088,7 +1088,7 @@ class TeamFeeds(APIView):
 
 class TeamFeedDetail(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1161,7 +1161,7 @@ class TeamFeedPhotos(APIView):
 
 class TeamNotisMonth(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1184,7 +1184,7 @@ class TeamNotisMonth(APIView):
 
 class TeamNotisByMonth(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1207,7 +1207,7 @@ class TeamNotisByMonth(APIView):
 
 class TeamSchedules(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1345,7 +1345,7 @@ class TeamSchedulesByMonth(APIView):
 
 class TeamDuesDetailList(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1364,7 +1364,7 @@ class TeamDuesDetailList(APIView):
 
 class TeamDuesDetail(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1625,7 +1625,7 @@ class TeamDuesOutAmount(APIView):
 
 class TeamDuesPaymentList(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1735,7 +1735,7 @@ class TeamDuesPaymentDetail(APIView):
 
 class TeamDuesPaymentItems(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
@@ -1859,7 +1859,7 @@ class TeamDuesPaymentItemDetail(APIView):
 
 class TeamDuesPaymentItemsExtra(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:

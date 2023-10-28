@@ -110,6 +110,12 @@ class UploadTeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = "__all__"
 
+class ReadOnlyTeamSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Team
+        fields = "__all__"
+
 class BallSerializer(serializers.ModelSerializer):
 
     class Meta:
