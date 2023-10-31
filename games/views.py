@@ -88,6 +88,15 @@ class GameDetail(APIView):
 
                     try:
                         noti = TeamNoti.objects.get(team=team, game=game, category="tom")
+                        noti.title = f"VS {game.vsteam}"
+                        noti.dateTime = timezone.make_aware(game_datetime_end)
+                        noti.save()
+                    except TeamNoti.DoesNotExist:
+                        pass
+
+                    try:
+                        noti = TeamNoti.objects.get(team=team, game=game, category="game")
+                        noti.title = f"VS {game.vsteam}"
                         noti.dateTime = timezone.make_aware(game_datetime_end)
                         noti.save()
                     except TeamNoti.DoesNotExist:
