@@ -70,7 +70,7 @@ class TeamsRecently(APIView):
 
 class TeamDetail(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
         try:
