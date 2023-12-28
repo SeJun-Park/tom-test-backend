@@ -11,29 +11,68 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound, NotAuthenticated, ParseError, PermissionDenied
+from rest_framework.exceptions import (
+    NotFound,
+    NotAuthenticated,
+    ParseError,
+    PermissionDenied,
+)
 from rest_framework import status
-from .models import Team, TeamFeed, TeamNoti, TeamSchedule, DuesDetail, DuesPayment, DuesPaymentItem, DuesInItem, DuesOutItem
+from .models import (
+    Team,
+    TeamFeed,
+    TeamNoti,
+    TeamSchedule,
+    DuesDetail,
+    DuesPayment,
+    DuesPaymentItem,
+    DuesInItem,
+    DuesOutItem,
+)
 from users.models import User
 from players.models import Player
 from games.models import Game, GoalPlayer, Vote
-from .serializers import TeamSerializer, TinyTeamSerializer, ReadOnlyTeamSerializer, UploadTeamSerializer, UploadTeamFeedSerializer, TeamFeedSerializer, TeamNotiSerializer, TeamScheduleSerializer, TeamVoteSerializer, DuesDetailSerializer, DuesPaymentSerializer, DuesInItemSerializer, DuesOutItemSerializer, DuesPaymentItemSerializer, UploadDuesPaymentItemSerializer
-from players.serializers import TinyPlayerSerializer, PlayerSerializer, UploadPlayerSerializer
+from .serializers import (
+    TeamSerializer,
+    TinyTeamSerializer,
+    ReadOnlyTeamSerializer,
+    UploadTeamSerializer,
+    UploadTeamFeedSerializer,
+    TeamFeedSerializer,
+    TeamNotiSerializer,
+    TeamScheduleSerializer,
+    TeamVoteSerializer,
+    DuesDetailSerializer,
+    DuesPaymentSerializer,
+    DuesInItemSerializer,
+    DuesOutItemSerializer,
+    DuesPaymentItemSerializer,
+    UploadDuesPaymentItemSerializer,
+)
+from players.serializers import (
+    TinyPlayerSerializer,
+    PlayerSerializer,
+    UploadPlayerSerializer,
+)
 from games.serializers import TinyGameSerializer, UploadGameSerializer
 from medias.serializers import PhotoSerializer
 from users.serializers import SpvsrUserSerializer
 from superplayers.serializers import SuperPlayerSerializer
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+    AllowAny,
+)
 
 # Create your views here.
 
+
 class Teams(APIView):
-    
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         data = request.data.copy()
-        data['founder'] = request.user.id  # founder 정보 추가
+        data["founder"] = request.user.id  # founder 정보 추가
 
         serializer = UploadTeamSerializer(data=data)
         if serializer.is_valid():
@@ -46,7 +85,6 @@ class Teams(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-
         team = self.get_object(pk)
         user = request.user
 
@@ -59,33 +97,30 @@ class Teams(APIView):
 
 
 class TeamsRecently(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        teams = Team.objects.order_by('-created_at')[:3]
+        teams = Team.objects.order_by("-created_at")[:3]
         serializer = TinyTeamSerializer(teams, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TeamDetail(APIView):
-    
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
         try:
             team = Team.objects.get(pk=pk)
             return team
         except Team.DoesNotExist:
-            raise NotFound        
+            raise NotFound
 
     def get(self, request, pk):
         team = self.get_object(pk)
-        serializer = TeamSerializer(team, context={"request" : request})
+        serializer = TeamSerializer(team, context={"request": request})
         return Response(serializer.data)
 
     def put(self, request, pk):
-
         team = self.get_object(pk)
         serializer = TinyTeamSerializer(team, data=request.data, partial=True)
 
@@ -94,7 +129,7 @@ class TeamDetail(APIView):
                 with transaction.atomic():
                     team = serializer.save()
 
-            except Exception as e: 
+            except Exception as e:
                 # 어떤 에러가 나든지 라는 뜻.
                 print(e)
                 raise ParseError
@@ -107,8 +142,8 @@ class TeamDetail(APIView):
             print(f"serializer.errors : {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class TeamPhoto(APIView):
-    
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -116,10 +151,9 @@ class TeamPhoto(APIView):
             team = Team.objects.get(pk=pk)
             return team
         except Team.DoesNotExist:
-            raise NotFound        
+            raise NotFound
 
     def put(self, request, pk):
-
         team = self.get_object(pk)
 
         def extract_image_id_from_url(url: str) -> str:
@@ -130,22 +164,26 @@ class TeamPhoto(APIView):
             return None
 
         if team.avatar and request.data.get("avatar"):
-
             image_id = extract_image_id_from_url(team.avatar)
 
             if image_id:
                 url = f"https://api.cloudflare.com/client/v4/accounts/{settings.CF_ID}/images/v1/{image_id}"
-            
-                response = requests.delete(url, headers={
+
+                response = requests.delete(
+                    url,
+                    headers={
                         "Authorization": f"Bearer {settings.CF_TOKEN}",
                         "Content-Type": "application/json"
                         # "X-Auth-Email": "sejun9aldo@gmail.com",
                         # "X-Auth-Key": settings.CF_GLOBAL_API_KEY
-                })
-
+                    },
+                )
 
                 if response.status_code != 200:  # 204 No Content는 성공적으로 삭제되었음을 의미합니다.
-                    return Response({"error": "Failed to delete image", "details": response.text}, status=response.status_code)
+                    return Response(
+                        {"error": "Failed to delete image", "details": response.text},
+                        status=response.status_code,
+                    )
 
         serializer = TinyTeamSerializer(team, data=request.data, partial=True)
 
@@ -155,7 +193,7 @@ class TeamPhoto(APIView):
                     team = serializer.save()
                     print(f"4. team.avatar : {team.avatar}")
 
-            except Exception as e: 
+            except Exception as e:
                 # 어떤 에러가 나든지 라는 뜻.
                 print(e)
                 raise ParseError
@@ -169,7 +207,6 @@ class TeamPhoto(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-            
         team = self.get_object(pk)
 
         def extract_image_id_from_url(url: str) -> str:
@@ -180,31 +217,37 @@ class TeamPhoto(APIView):
             return None
 
         if team.avatar:
-
             image_id = extract_image_id_from_url(team.avatar)
 
             if image_id:
                 url = f"https://api.cloudflare.com/client/v4/accounts/{settings.CF_ID}/images/v1/{image_id}"
-            
-                response = requests.delete(url, headers={
+
+                response = requests.delete(
+                    url,
+                    headers={
                         "Authorization": f"Bearer {settings.CF_TOKEN}",
                         "Content-Type": "application/json"
                         # "X-Auth-Email": "sejun9aldo@gmail.com",
                         # "X-Auth-Key": settings.CF_GLOBAL_API_KEY
-                })
-
+                    },
+                )
 
                 if response.status_code != 200:  # 204 No Content는 성공적으로 삭제되었음을 의미합니다.
-                    return Response({"error": "Failed to delete image", "details": response.text}, status=response.status_code)
+                    return Response(
+                        {"error": "Failed to delete image", "details": response.text},
+                        status=response.status_code,
+                    )
 
                 team.avatar = ""
                 team.save()
-                
-            return Response({"message": "Image successfully deleted and avatar cleared."}, status=status.HTTP_200_OK)
+
+            return Response(
+                {"message": "Image successfully deleted and avatar cleared."},
+                status=status.HTTP_200_OK,
+            )
 
 
 class TeamDetailReadOnly(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -212,7 +255,7 @@ class TeamDetailReadOnly(APIView):
             team = Team.objects.get(pk=pk)
             return team
         except Team.DoesNotExist:
-            raise NotFound        
+            raise NotFound
 
     def get(self, request, pk):
         team = self.get_object(pk)
@@ -221,7 +264,6 @@ class TeamDetailReadOnly(APIView):
 
 
 class TeamSearch(APIView):
-
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -231,8 +273,8 @@ class TeamSearch(APIView):
         serializer = TinyTeamSerializer(search_result_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TeamPlayers(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -286,8 +328,8 @@ class TeamPlayers(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class TeamSpvsrs(APIView):
-    
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -300,11 +342,13 @@ class TeamSpvsrs(APIView):
     def get(self, request, pk):
         team = self.get_object(pk)
         team_spvsrs_all = team.spvsrs.all()
-        serializer = SpvsrUserSerializer(team_spvsrs_all, many=True, context={"team" : team})
+        serializer = SpvsrUserSerializer(
+            team_spvsrs_all, many=True, context={"team": team}
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TeamConnectingSpvsrs(APIView):
-    
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -322,7 +366,6 @@ class TeamConnectingSpvsrs(APIView):
 
 
 class TeamSpvsrsConnecting(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -333,23 +376,20 @@ class TeamSpvsrsConnecting(APIView):
             raise NotFound
 
     def post(self, request, pk):
-        
         team = self.get_object(pk)
         user = request.user
 
         if user.is_spvsr and user not in team.connecting_spvsrs.all():
-
             team.connecting_spvsrs.add(user)
             team.save()
 
             serializer = SpvsrUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamSpvsrsConnectingCancelByOneself(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -360,23 +400,20 @@ class TeamSpvsrsConnectingCancelByOneself(APIView):
             raise NotFound
 
     def put(self, request, pk):
-        
         team = self.get_object(pk)
         user = request.user
 
         if user.is_spvsr and user in team.connecting_spvsrs.all():
-
             team.connecting_spvsrs.remove(user)
             team.save()
 
             serializer = SpvsrUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamSpvsrsConnectingCancelByFounder(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -387,7 +424,6 @@ class TeamSpvsrsConnectingCancelByFounder(APIView):
             raise NotFound
 
     def put(self, request, pk):
-        
         team = self.get_object(pk)
         user_id = request.data.get("userId")
 
@@ -402,12 +438,11 @@ class TeamSpvsrsConnectingCancelByFounder(APIView):
             team.save()
             serializer = SpvsrUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamSpvsrsConnect(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -418,7 +453,6 @@ class TeamSpvsrsConnect(APIView):
             raise NotFound
 
     def post(self, request, pk):
-        
         team = self.get_object(pk)
         user_id = request.data.get("userId")
         founder = request.user
@@ -436,11 +470,11 @@ class TeamSpvsrsConnect(APIView):
 
             serializer = SpvsrUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class TeamSpvsrsConnectCancelByOneself(APIView):
 
+class TeamSpvsrsConnectCancelByOneself(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -451,23 +485,20 @@ class TeamSpvsrsConnectCancelByOneself(APIView):
             raise NotFound
 
     def put(self, request, pk):
-        
         team = self.get_object(pk)
         user = request.user
 
         if user.is_spvsr and user in team.spvsrs.all():
-
             team.spvsrs.remove(user)
             team.save()
 
             serializer = SpvsrUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamSpvsrsConnectCancelByFounder(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -478,7 +509,6 @@ class TeamSpvsrsConnectCancelByFounder(APIView):
             raise NotFound
 
     def put(self, request, pk):
-        
         team = self.get_object(pk)
         user_id = request.data.get("userId")
 
@@ -489,18 +519,16 @@ class TeamSpvsrsConnectCancelByFounder(APIView):
             raise NotFound
 
         if user.is_spvsr and user in team.spvsrs.all():
-
             team.spvsrs.remove(user)
             team.save()
 
             serializer = SpvsrUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamPlayersGoalStats(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -513,13 +541,14 @@ class TeamPlayersGoalStats(APIView):
     def get(self, request, pk):
         team = self.get_object(pk)
         team_players_all = team.players.all()
-        team_players_all_sorted_by_goals = team_players_all.annotate(goal_count=Count('goals')).order_by('-goal_count')
+        team_players_all_sorted_by_goals = team_players_all.annotate(
+            goal_count=Count("goals")
+        ).order_by("-goal_count")
         serializer = TinyPlayerSerializer(team_players_all_sorted_by_goals, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TeamPlayersTOMStats(APIView):
-        
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -532,13 +561,16 @@ class TeamPlayersTOMStats(APIView):
     def get(self, request, pk):
         team = self.get_object(pk)
         team_players_all = team.players.all()
-        team_players_all_sorted_by_tom_games = team_players_all.annotate(tom_games_count=Count('tom_games')).order_by('-tom_games_count')
-        serializer = TinyPlayerSerializer(team_players_all_sorted_by_tom_games, many=True)
+        team_players_all_sorted_by_tom_games = team_players_all.annotate(
+            tom_games_count=Count("tom_games")
+        ).order_by("-tom_games_count")
+        serializer = TinyPlayerSerializer(
+            team_players_all_sorted_by_tom_games, many=True
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TeamPlayersConnected(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -556,8 +588,8 @@ class TeamPlayersConnected(APIView):
         serializer = TinyPlayerSerializer(team_players_connected_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class TeamPlayersNotConnected(APIView):
 
+class TeamPlayersNotConnected(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -570,13 +602,17 @@ class TeamPlayersNotConnected(APIView):
     def get(self, request, pk):
         team = self.get_object(pk)
         team_players_all = team.players.all()
-        team_players_not_connected = team_players_all.filter(connected_user__isnull=True, connecting_user__isnull=True)
-        team_players_not_connected_sorted = team_players_not_connected.order_by("backnumber")
+        team_players_not_connected = team_players_all.filter(
+            connected_user__isnull=True, connecting_user__isnull=True
+        )
+        team_players_not_connected_sorted = team_players_not_connected.order_by(
+            "backnumber"
+        )
         serializer = TinyPlayerSerializer(team_players_not_connected_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class TeamPlayersConnecting(APIView):
 
+class TeamPlayersConnecting(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -594,8 +630,8 @@ class TeamPlayersConnecting(APIView):
         serializer = TinyPlayerSerializer(team_players_connecting_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TeamGames(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -613,12 +649,11 @@ class TeamGames(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, pk):
-
         team = self.get_object(pk)
         user = request.user
 
         if not team.spvsrs.filter(id=user.id).exists():
-            raise PermissionDenied 
+            raise PermissionDenied
 
         serializer = UploadGameSerializer(data=request.data)
 
@@ -633,9 +668,13 @@ class TeamGames(APIView):
                         for participant_pk in participants:
                             participant = Player.objects.get(pk=participant_pk)
                             game.participants.add(participant)
-                        
-                    game_datetime_start = timezone.datetime.combine(game.date, game.start_time)
-                    game_datetime_end = timezone.datetime.combine(game.date, game.end_time)
+
+                    game_datetime_start = timezone.datetime.combine(
+                        game.date, game.start_time
+                    )
+                    game_datetime_end = timezone.datetime.combine(
+                        game.date, game.end_time
+                    )
                     vote_start = game_datetime_end
                     vote_end = game_datetime_end + timedelta(days=2)
                     vote_end = vote_end.replace(hour=0, minute=0, second=0)
@@ -645,9 +684,7 @@ class TeamGames(APIView):
 
                     # vote 객체 생성
                     vote = Vote.objects.create(
-                        game=game,
-                        start=vote_start,
-                        end=vote_end
+                        game=game, start=vote_start, end=vote_end
                     )
 
                     vote.candidates.set(game.participants.all())
@@ -679,22 +716,21 @@ class TeamGames(APIView):
                         game=game,
                         dateTime=game_datetime_start,
                         category="game",
-                        title=f"VS {game.vsteam}"
+                        title=f"VS {game.vsteam}",
                     )
-
 
                     serializer = UploadGameSerializer(game)
 
                     return Response(serializer.data, status=status.HTTP_200_OK)
-            except Exception as e: 
+            except Exception as e:
                 # 어떤 에러가 나든지 라는 뜻.
                 print(e)
                 raise ParseError
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class TeamGamesRelative(APIView):
 
+class TeamGamesRelative(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -732,10 +768,9 @@ class TeamGamesRelative(APIView):
 #         player_goal_games_all_sorted = player_goal_games_all.order_by("-date")
 #         serializer = TinyGameSerializer(player_goal_games_all_sorted, many=True)
 #         return Response(serializer.data)
-    
+
 
 class TeamGoals(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -756,15 +791,13 @@ class TeamGoals(APIView):
                 if game.team_score:
                     team_goals_all = team_goals_all + game.team_score
 
-            response_data = {
-                "goals" : team_goals_all
-            }
+            response_data = {"goals": team_goals_all}
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class TeamGoalsRelative(APIView):
-        
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -788,15 +821,13 @@ class TeamGoalsRelative(APIView):
                 if game.team_score:
                     team_goals_relative_all = team_goals_relative_all + game.team_score
 
-            response_data = {
-                "goals" : team_goals_relative_all
-            }
+            response_data = {"goals": team_goals_relative_all}
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class TeamGoalsAgainst(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -817,15 +848,13 @@ class TeamGoalsAgainst(APIView):
                 if game.vsteam_score:
                     team_goals_against_all = team_goals_against_all + game.vsteam_score
 
-            response_data = {
-                "goals" : team_goals_against_all
-            }
+            response_data = {"goals": team_goals_against_all}
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class TeamGoalsAgainstRelative(APIView):
-        
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -847,18 +876,17 @@ class TeamGoalsAgainstRelative(APIView):
             team_goals_against_relative_all = 0
             for game in team_games_relative:
                 if game.vsteam_score:
-                    team_goals_against_relative_all = team_goals_against_relative_all + game.vsteam_score
+                    team_goals_against_relative_all = (
+                        team_goals_against_relative_all + game.vsteam_score
+                    )
 
-            response_data = {
-                "goals" : team_goals_against_relative_all
-            }
+            response_data = {"goals": team_goals_against_relative_all}
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamSuperPlayers(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -875,8 +903,8 @@ class TeamSuperPlayers(APIView):
         serializer = SuperPlayerSerializer(team_superplayers_all_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TeamVSteams(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -898,13 +926,13 @@ class TeamVSteams(APIView):
         vsteams = list(vsteams_set)
 
         response_data = {
-            "vsteams" : vsteams,
+            "vsteams": vsteams,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
 
-class TeamStats(APIView):
 
+class TeamStats(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -919,10 +947,14 @@ class TeamStats(APIView):
             team = self.get_object(pk)
             team_games_all = team.games.all()
 
-            team_not_recorded_games_all = team_games_all.filter(Q(team_score__isnull=True) | Q(vsteam_score__isnull=True))
-            team_win_games_all = team_games_all.filter(team_score__gt=F('vsteam_score'))
-            team_draw_games_all = team_games_all.filter(team_score=F('vsteam_score'))
-            team_lose_games_all = team_games_all.filter(team_score__lt=F('vsteam_score'))
+            team_not_recorded_games_all = team_games_all.filter(
+                Q(team_score__isnull=True) | Q(vsteam_score__isnull=True)
+            )
+            team_win_games_all = team_games_all.filter(team_score__gt=F("vsteam_score"))
+            team_draw_games_all = team_games_all.filter(team_score=F("vsteam_score"))
+            team_lose_games_all = team_games_all.filter(
+                team_score__lt=F("vsteam_score")
+            )
 
             not_recorded_count_all = team_not_recorded_games_all.count()
             win_count_all = team_win_games_all.count()
@@ -930,18 +962,18 @@ class TeamStats(APIView):
             lose_count_all = team_lose_games_all.count()
 
             response_data = {
-                "not" : not_recorded_count_all,
-                "win" : win_count_all,
-                "draw" : draw_count_all,
-                "lose" : lose_count_all,
+                "not": not_recorded_count_all,
+                "win": win_count_all,
+                "draw": draw_count_all,
+                "lose": lose_count_all,
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class TeamStatsRelative(APIView):
 
+class TeamStatsRelative(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -958,10 +990,18 @@ class TeamStatsRelative(APIView):
             team_games_all = team.games.all()
             team_games_vsteam_all = team_games_all.filter(vsteam=vsteam)
 
-            team_not_recorded_games_relative = team_games_vsteam_all.filter(Q(team_score__isnull=True) | Q(vsteam_score__isnull=True))
-            team_win_games_relative = team_games_vsteam_all.filter(team_score__gt=F('vsteam_score'))
-            team_draw_games_relative = team_games_vsteam_all.filter(team_score=F('vsteam_score'))
-            team_lose_games_relative = team_games_vsteam_all.filter(team_score__lt=F('vsteam_score'))
+            team_not_recorded_games_relative = team_games_vsteam_all.filter(
+                Q(team_score__isnull=True) | Q(vsteam_score__isnull=True)
+            )
+            team_win_games_relative = team_games_vsteam_all.filter(
+                team_score__gt=F("vsteam_score")
+            )
+            team_draw_games_relative = team_games_vsteam_all.filter(
+                team_score=F("vsteam_score")
+            )
+            team_lose_games_relative = team_games_vsteam_all.filter(
+                team_score__lt=F("vsteam_score")
+            )
 
             not_recorded_count_relative = team_not_recorded_games_relative.count()
             win_count_relative = team_win_games_relative.count()
@@ -969,19 +1009,19 @@ class TeamStatsRelative(APIView):
             lose_count_relative = team_lose_games_relative.count()
 
             response_data = {
-                "vsteam" : vsteam,
-                "not" : not_recorded_count_relative,
-                "win" : win_count_relative,
-                "draw" : draw_count_relative,
-                "lose" : lose_count_relative,
+                "vsteam": vsteam,
+                "not": not_recorded_count_relative,
+                "win": win_count_relative,
+                "draw": draw_count_relative,
+                "lose": lose_count_relative,
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class TeamTomVoteIng(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -995,19 +1035,19 @@ class TeamTomVoteIng(APIView):
         team = self.get_object(pk)
         now = timezone.now()
 
-        team_toms_all = team.games.all().annotate(
-            vote_start=F('vote__start'),
-            vote_end=F('vote__end')
-        ).filter(
-            Q(vote_start__lte=now) & Q(vote_end__gte=now)
-        ).distinct()
+        team_toms_all = (
+            team.games.all()
+            .annotate(vote_start=F("vote__start"), vote_end=F("vote__end"))
+            .filter(Q(vote_start__lte=now) & Q(vote_end__gte=now))
+            .distinct()
+        )
 
         team_toms_all_sorted = team_toms_all.order_by("-date")
         serializer = TinyGameSerializer(team_toms_all_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TeamToms(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1022,13 +1062,15 @@ class TeamToms(APIView):
         now = timezone.now()
 
         team_games_all = team.games.all()
-        team_toms_all = team_games_all.filter(toms__isnull=False, vote__end__lt=now).distinct()
+        team_toms_all = team_games_all.filter(
+            toms__isnull=False, vote__end__lt=now
+        ).distinct()
         team_toms_all_sorted = team_toms_all.order_by("-date")
         serializer = TinyGameSerializer(team_toms_all_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TeamVotes(APIView):
-    
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1045,8 +1087,8 @@ class TeamVotes(APIView):
         serializer = TeamVoteSerializer(team_votes_all_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class TeamFeeds(APIView):
 
+class TeamFeeds(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1072,7 +1114,7 @@ class TeamFeeds(APIView):
                 raise PermissionDenied
 
             data = request.data.copy()
-            data['team'] = team.id
+            data["team"] = team.id
 
             serializer = UploadTeamFeedSerializer(data=data)
 
@@ -1084,10 +1126,9 @@ class TeamFeeds(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-                
+
 
 class TeamFeedDetail(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1114,7 +1155,7 @@ class TeamFeedDetail(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            
+
         except Exception as e:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1130,8 +1171,8 @@ class TeamFeedDetail(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TeamFeedPhotos(APIView):
 
+class TeamFeedPhotos(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -1140,7 +1181,7 @@ class TeamFeedPhotos(APIView):
             return feed
         except TeamFeed.DoesNotExist:
             raise NotFound
-    
+
     def post(self, request, pk, feed_pk):
         feed = self.get_object(pk=feed_pk)
         team = feed.team
@@ -1160,7 +1201,6 @@ class TeamFeedPhotos(APIView):
 
 
 class TeamNotisMonth(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1174,16 +1214,20 @@ class TeamNotisMonth(APIView):
         team = self.get_object(pk)
 
         # 년월로 그룹화
-        dates = team.notis.annotate(month_created=TruncMonth('dateTime')).values('month_created').distinct().order_by('-month_created')
+        dates = (
+            team.notis.annotate(month_created=TruncMonth("dateTime"))
+            .values("month_created")
+            .distinct()
+            .order_by("-month_created")
+        )
 
         # 결과를 'YYYY년 MM월' 형식으로 변환
-        formatted_dates = [date['month_created'].strftime('%Y년 %m월') for date in dates]
+        formatted_dates = [date["month_created"].strftime("%Y년 %m월") for date in dates]
 
         return Response(formatted_dates, status=status.HTTP_200_OK)
 
 
 class TeamNotisByMonth(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1199,14 +1243,15 @@ class TeamNotisByMonth(APIView):
         month = request.data.get("month")
 
         team_notis_all = team.notis.all()
-        team_notis_by_month = team_notis_all.filter(dateTime__year=year, dateTime__month=month)
+        team_notis_by_month = team_notis_all.filter(
+            dateTime__year=year, dateTime__month=month
+        )
         team_notis_by_month_sorted = team_notis_by_month.order_by("-dateTime")
         serializer = TeamNotiSerializer(team_notis_by_month_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TeamSchedules(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1225,13 +1270,17 @@ class TeamSchedules(APIView):
                 raise PermissionDenied
 
             # # 1. 요청에서 date와 time 값을 추출
-            date_str = request.data.get('date')
-            time_str = request.data.get('time')
-            
+            date_str = request.data.get("date")
+            time_str = request.data.get("time")
+
             # # 2. 이 두 값을 합쳐 dateTime 필드를 생성
-            date_obj = timezone.datetime.strptime(date_str, "%Y-%m-%d").date() # 예: '2023-08-23'를 date 객체로
-            time_obj = timezone.datetime.strptime(time_str, "%H:%M").time() # 예: '15:30'를 time 객체로
-            
+            date_obj = timezone.datetime.strptime(
+                date_str, "%Y-%m-%d"
+            ).date()  # 예: '2023-08-23'를 date 객체로
+            time_obj = timezone.datetime.strptime(
+                time_str, "%H:%M"
+            ).time()  # 예: '15:30'를 time 객체로
+
             combined_datetime = timezone.datetime.combine(date_obj, time_obj)
 
             # 3. dateTime 필드를 직렬화기에 전달하기 전에 request 데이터에 추가
@@ -1241,8 +1290,8 @@ class TeamSchedules(APIView):
             # dateTime = timezone.datetime.combine(date, time)
 
             data = request.data.copy()
-            data['dateTime'] = dateTime
-            data['team'] = team.id  # or whichever representation you need
+            data["dateTime"] = dateTime
+            data["team"] = team.id  # or whichever representation you need
 
             # request.data['dateTime'] = dateTime
 
@@ -1254,16 +1303,16 @@ class TeamSchedules(APIView):
                     schedule = serializer.save()
 
                     TeamNoti.objects.create(
-                                team=team,
-                                schedule=schedule,
-                                dateTime=timezone.now(),
-                                name="Tom",
-                                description="삼오엠 매니저",
-                                title=f"{schedule.title}",
-                                category="plan",
-                                payload="새로운 일정이 추가되었습니다.",
-                            )
-                    
+                        team=team,
+                        schedule=schedule,
+                        dateTime=timezone.now(),
+                        name="Tom",
+                        description="삼오엠 매니저",
+                        title=f"{schedule.title}",
+                        category="plan",
+                        payload="새로운 일정이 추가되었습니다.",
+                    )
+
                     serializer = TeamScheduleSerializer(schedule)
 
             else:
@@ -1274,8 +1323,8 @@ class TeamSchedules(APIView):
             print(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class TeamScheduleDetail(APIView):
 
+class TeamScheduleDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -1297,8 +1346,8 @@ class TeamScheduleDetail(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TeamSchedulesMonth(APIView):
 
+class TeamSchedulesMonth(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1312,17 +1361,20 @@ class TeamSchedulesMonth(APIView):
         team = self.get_object(pk)
 
         # 년월로 그룹화
-        dates = team.schedules.annotate(month_created=TruncMonth('dateTime')).values('month_created').distinct().order_by('-month_created')
+        dates = (
+            team.schedules.annotate(month_created=TruncMonth("dateTime"))
+            .values("month_created")
+            .distinct()
+            .order_by("-month_created")
+        )
 
         # 결과를 'YYYY년 MM월' 형식으로 변환
-        formatted_dates = [date['month_created'].strftime('%Y년 %m월') for date in dates]
+        formatted_dates = [date["month_created"].strftime("%Y년 %m월") for date in dates]
 
-        
         return Response(formatted_dates, status=status.HTTP_200_OK)
 
 
 class TeamSchedulesByMonth(APIView):
-
     permission_classes = [AllowAny]
 
     def get_object(self, pk):
@@ -1338,13 +1390,15 @@ class TeamSchedulesByMonth(APIView):
         month = request.data.get("month")
 
         team_schedules_all = team.schedules.all()
-        team_schedules_by_month = team_schedules_all.filter(dateTime__year=year, dateTime__month=month)
+        team_schedules_by_month = team_schedules_all.filter(
+            dateTime__year=year, dateTime__month=month
+        )
         team_schedules_by_month_sorted = team_schedules_by_month.order_by("-dateTime")
         serializer = TeamScheduleSerializer(team_schedules_by_month_sorted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class TeamDuesDetailList(APIView):
 
+class TeamDuesDetailList(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1363,7 +1417,6 @@ class TeamDuesDetailList(APIView):
 
 
 class TeamDuesDetail(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1382,7 +1435,7 @@ class TeamDuesDetail(APIView):
                 raise PermissionDenied
 
             data = request.data.copy()
-            data['team'] = team.id
+            data["team"] = team.id
 
             serializer = DuesDetailSerializer(data=data)
 
@@ -1399,9 +1452,7 @@ class TeamDuesDetail(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class TeamDuesDetailDetail(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1420,21 +1471,21 @@ class TeamDuesDetailDetail(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
     def put(self, request, pk, detail_pk):
         try:
             dues_detail = self.get_object(detail_pk)
-            serializer = DuesDetailSerializer(dues_detail, data=request.data, partial=True)
+            serializer = DuesDetailSerializer(
+                dues_detail, data=request.data, partial=True
+            )
 
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            
+
         except Exception as e:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, detail_pk):
-
         dues_detail = self.get_object(detail_pk)
         team = dues_detail.team
         user = request.user
@@ -1446,8 +1497,8 @@ class TeamDuesDetailDetail(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TeamDuesInItems(APIView):
 
+class TeamDuesInItems(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1474,7 +1525,7 @@ class TeamDuesInItems(APIView):
                 raise PermissionDenied
 
             data = request.data.copy()
-            data['dues_detail'] = dues_detail.id
+            data["dues_detail"] = dues_detail.id
 
             serializer = DuesInItemSerializer(data=data)
 
@@ -1490,8 +1541,8 @@ class TeamDuesInItems(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class TeamDuesInItemDetail(APIView):
 
+class TeamDuesInItemDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -1514,8 +1565,8 @@ class TeamDuesInItemDetail(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TeamDuesInAmount(APIView):
 
+class TeamDuesInAmount(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1531,10 +1582,10 @@ class TeamDuesInAmount(APIView):
 
         dues_in_amount = sum(item.amount for item in team_dues_in_items_all)
 
-        return Response({"amount": dues_in_amount},  status=status.HTTP_200_OK)
+        return Response({"amount": dues_in_amount}, status=status.HTTP_200_OK)
+
 
 class TeamDuesOutItems(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1561,7 +1612,7 @@ class TeamDuesOutItems(APIView):
                 raise PermissionDenied
 
             data = request.data.copy()
-            data['dues_detail'] = dues_detail.id
+            data["dues_detail"] = dues_detail.id
 
             serializer = DuesOutItemSerializer(data=data)
 
@@ -1577,8 +1628,8 @@ class TeamDuesOutItems(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class TeamDuesOutItemDetail(APIView):
 
+class TeamDuesOutItemDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -1604,7 +1655,6 @@ class TeamDuesOutItemDetail(APIView):
 
 
 class TeamDuesOutAmount(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1620,11 +1670,10 @@ class TeamDuesOutAmount(APIView):
 
         dues_out_amount = sum(item.amount for item in team_dues_out_items_all)
 
-        return Response({"amount": dues_out_amount},  status=status.HTTP_200_OK)
+        return Response({"amount": dues_out_amount}, status=status.HTTP_200_OK)
 
 
 class TeamDuesPaymentList(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1643,7 +1692,6 @@ class TeamDuesPaymentList(APIView):
 
 
 class TeamDuesPayment(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -1662,7 +1710,7 @@ class TeamDuesPayment(APIView):
                 raise PermissionDenied
 
             data = request.data.copy()
-            data['team'] = team.id
+            data["team"] = team.id
 
             serializer = DuesPaymentSerializer(data=data)
 
@@ -1671,12 +1719,14 @@ class TeamDuesPayment(APIView):
                     dues_payment = serializer.save()
 
                     # 여기서 Team에 속한 모든 Player에 대해 DuesPaymentItem을 생성합니다.
-                    players = team.players.all()  # team과 player 간의 연결을 어떻게 했는지에 따라 다를 수 있으므로 적절하게 수정해주세요.
+                    players = (
+                        team.players.all()
+                    )  # team과 player 간의 연결을 어떻게 했는지에 따라 다를 수 있으므로 적절하게 수정해주세요.
                     for player in players:
                         DuesPaymentItem.objects.create(
                             dues_payment=dues_payment,
                             player=player,
-                            payment=DuesPaymentItem.DuesPaymentItemChoices.NON_PAID
+                            payment=DuesPaymentItem.DuesPaymentItemChoices.NON_PAID,
                         )
 
                     # 마지막에 다시 DuesPayment 객체에 대한 serializer를 만들어 응답을 전달합니다.
@@ -1688,7 +1738,6 @@ class TeamDuesPayment(APIView):
 
 
 class TeamDuesPaymentDetail(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1710,18 +1759,18 @@ class TeamDuesPaymentDetail(APIView):
     def put(self, request, pk, payment_pk):
         try:
             dues_payment = self.get_object(payment_pk)
-            serializer = DuesPaymentSerializer(dues_payment, data=request.data, partial=True)
+            serializer = DuesPaymentSerializer(
+                dues_payment, data=request.data, partial=True
+            )
 
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            
+
         except Exception as e:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     def delete(self, request, pk, payment_pk):
-
         dues_payment = self.get_object(payment_pk)
         team = dues_payment.team
         user = request.user
@@ -1733,8 +1782,8 @@ class TeamDuesPaymentDetail(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TeamDuesPaymentItems(APIView):
 
+class TeamDuesPaymentItems(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1746,7 +1795,9 @@ class TeamDuesPaymentItems(APIView):
 
     def get(self, request, pk, payment_pk):
         dues_payment = self.get_object(payment_pk)
-        team_dues_payment_items_all = dues_payment.dues_payment_items.all().order_by("player__backnumber")
+        team_dues_payment_items_all = dues_payment.dues_payment_items.all().order_by(
+            "player__backnumber"
+        )
         serializer = DuesPaymentItemSerializer(team_dues_payment_items_all, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1761,8 +1812,8 @@ class TeamDuesPaymentItems(APIView):
                 raise PermissionDenied
 
             data = request.data.copy()
-            data['dues_payment'] = dues_payment.id
-            data['payment'] = DuesPaymentItem.DuesPaymentItemChoices.NON_PAID
+            data["dues_payment"] = dues_payment.id
+            data["payment"] = DuesPaymentItem.DuesPaymentItemChoices.NON_PAID
 
             serializer = UploadDuesPaymentItemSerializer(data=data)
 
@@ -1781,7 +1832,6 @@ class TeamDuesPaymentItems(APIView):
 
 
 class TeamDuesPaymentItemsReadOnly(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_dues_payment(self, pk):
@@ -1797,20 +1847,26 @@ class TeamDuesPaymentItemsReadOnly(APIView):
         # annotate를 사용해 payment_order 필드를 추가
         team_dues_payment_items_all = dues_payment.dues_payment_items.annotate(
             payment_order=Case(
-                When(payment=DuesPaymentItem.DuesPaymentItemChoices.PAID, then=Value(2)),
-                When(payment=DuesPaymentItem.DuesPaymentItemChoices.NON_PAID, then=Value(1)),
+                When(
+                    payment=DuesPaymentItem.DuesPaymentItemChoices.PAID, then=Value(2)
+                ),
+                When(
+                    payment=DuesPaymentItem.DuesPaymentItemChoices.NON_PAID,
+                    then=Value(1),
+                ),
                 When(payment=DuesPaymentItem.DuesPaymentItemChoices.NA, then=Value(3)),
                 default=Value(4),  # 혹시 모를 다른 값들에 대해
-                output_field=IntegerField()
+                output_field=IntegerField(),
             )
-        ).order_by("payment_order", "-created_at")  # 먼저 payment_order로 정렬한 후 동일한 카테고리 내에서 created_at으로 정렬
+        ).order_by(
+            "payment_order", "-created_at"
+        )  # 먼저 payment_order로 정렬한 후 동일한 카테고리 내에서 created_at으로 정렬
 
         serializer = DuesPaymentItemSerializer(team_dues_payment_items_all, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TeamDuesPaymentItemDetail(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):
@@ -1829,19 +1885,19 @@ class TeamDuesPaymentItemDetail(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
     def put(self, request, pk, item_pk):
         try:
             dues_payment_item = self.get_object(item_pk)
-            serializer = DuesPaymentItemSerializer(dues_payment_item, data=request.data, partial=True)
+            serializer = DuesPaymentItemSerializer(
+                dues_payment_item, data=request.data, partial=True
+            )
 
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            
+
         except Exception as e:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def delete(self, request, pk, item_pk):
         dues_payment_item = self.get_object(item_pk)
@@ -1858,7 +1914,6 @@ class TeamDuesPaymentItemDetail(APIView):
 
 
 class TeamDuesPaymentItemsExtra(APIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, pk):
@@ -1873,18 +1928,24 @@ class TeamDuesPaymentItemsExtra(APIView):
             dues_payment = self.get_object(payment_pk)
 
             # dues_payment와 연결된 모든 DuesPaymentItem에서 Player들을 가져옴
-            connected_players_ids = dues_payment.dues_payment_items.all().values_list('player__id', flat=True)
+            connected_players_ids = dues_payment.dues_payment_items.all().values_list(
+                "player__id", flat=True
+            )
 
             # 해당 dues_payment가 가리키고 있는 team의 모든 Player들 중에서 dues_payment와 연결되지 않은 Player들만 필터링
-            unconnected_players = Player.objects.filter(team=dues_payment.team).exclude(id__in=connected_players_ids)
+            unconnected_players = Player.objects.filter(team=dues_payment.team).exclude(
+                id__in=connected_players_ids
+            )
 
             unconnected_players_sorted = unconnected_players.order_by("backnumber")
 
             # 응답을 위해 Player 객체를 serialize. 여기서는 간단하게 이름만 반환하였지만, 필요에 따라 다른 필드나 전체 데이터를 반환할 수 있음
-            data = [{"id": player.id, "name": player.name, "backnumber": player.backnumber} for player in unconnected_players_sorted]
+            data = [
+                {"id": player.id, "name": player.name, "backnumber": player.backnumber}
+                for player in unconnected_players_sorted
+            ]
 
             return Response(data, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
